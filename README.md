@@ -70,6 +70,8 @@ Masma currently understands these structural and flow-level MASM constructs:
 * `.IF/.ELSEIF/.ELSE/.ENDIF`
 * `.WHILE/.ENDW`
 * `.REPEAT/.UNTIL` and `.REPEAT/.UNTILCXZ`
+* heuristic recovery of common jump-based flow:
+  `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, and label-based `jcc/jmp` loop patterns
 
 ## Constraints and honesty
 

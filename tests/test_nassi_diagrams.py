@@ -83,6 +83,45 @@ def test_control_flow_extractor_maps_structured_masm_blocks() -> None:
     assert normalize.steps[0].label == "start_loop:"
 
 
+def test_control_flow_extractor_reconstructs_jump_based_if_else_and_loop() -> None:
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("jump-flow"),
+        location="jump-flow.asm",
+        content="""
+jumpy PROC
+loop_top:
+    cmp eax, 10
+    jge loop_done
+    inc eax
+    jmp loop_top
+loop_done:
+    test ebx, ebx
+    jz zero_case
+    inc ecx
+    jmp after_if
+zero_case:
+    dec ecx
+after_if:
+    ret
+jumpy ENDP
+""".strip(),
+    )
+
+    diagram = extractor.extract(source)
+
+    assert len(diagram.functions) == 1
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], WhileFlowStep)
+    assert steps[0].condition == "eax < 10"
+    assert [step.label for step in steps[0].body_steps] == ["inc eax"]
+    assert isinstance(steps[1], IfFlowStep)
+    assert steps[1].condition == "ebx & ebx != 0"
+    assert [step.label for step in steps[1].then_steps] == ["inc ecx"]
+    assert [step.label for step in steps[1].else_steps] == ["dec ecx"]
+    assert steps[2].label == "ret"
+
+
 def test_nassi_cli_writes_html_file_for_masm(tmp_path: Path) -> None:
     output_path = tmp_path / "control_flow.html"
 

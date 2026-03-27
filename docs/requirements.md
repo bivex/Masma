@@ -12,7 +12,7 @@
 8. The system must expose parser version and report schema version in the result contract.
 9. The system must distinguish successful parsing, parsing with diagnostics, and technical failure.
 10. The CLI must return machine-readable JSON for parse workflows.
-11. The system must extract structured control flow for MASM procedures using `.IF/.ELSEIF/.ELSE/.ENDIF`, `.WHILE/.ENDW`, and `.REPEAT/.UNTIL`.
+11. The system must extract structured control flow for MASM procedures using `.IF/.ELSEIF/.ELSE/.ENDIF`, `.WHILE/.ENDW`, `.REPEAT/.UNTIL`, and common `cmp/test + jcc/jmp + label` patterns.
 12. The system must build an HTML Nassi-Shneiderman diagram for a single MASM file.
 13. The system must build a directory bundle of diagrams and an index page.
 14. Diagram metadata must expose source location, procedure count, and procedure names.
