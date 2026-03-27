@@ -32,25 +32,31 @@ The design stays hexagonal: the application layer depends on parser and renderin
 uv sync --extra dev
 ```
 
-2. Parse one MASM file:
+2. Regenerate the ANTLR backend after grammar changes:
+
+```bash
+uv run python scripts/generate_masm_parser.py
+```
+
+3. Parse one MASM file:
 
 ```bash
 uv run masma parse-file path/to/program.asm
 ```
 
-3. Parse a directory:
+4. Parse a directory:
 
 ```bash
 uv run masma parse-dir path/to/project
 ```
 
-4. Build one Nassi-Shneiderman diagram:
+5. Build one Nassi-Shneiderman diagram:
 
 ```bash
 uv run masma nassi-file path/to/program.asm --out output/program.nassi.html
 ```
 
-5. Build a directory bundle of diagrams:
+6. Build a directory bundle of diagrams:
 
 ```bash
 uv run masma nassi-dir path/to/project --out output/nassi-bundle
@@ -72,6 +78,7 @@ Masma currently understands these structural and flow-level MASM constructs:
 * `.REPEAT/.UNTIL` and `.REPEAT/.UNTILCXZ`
 * heuristic recovery of common jump-based flow:
   `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, and label-based `jcc/jmp` loop patterns
+* an ANTLR-backed structural parser derived from the upstream `grammars-v4` MASM grammar and patched for Masma's working subset
 
 ## Constraints and honesty
 

@@ -35,6 +35,7 @@ def test_parse_file_extracts_masm_structure() -> None:
     assert report.summary.source_count == 1
     assert report.summary.technical_failure_count == 0
     assert report.sources[0].status == "succeeded"
+    assert report.sources[0].parser_version.startswith("masm-hybrid-parser@")
     assert {element.kind for element in report.sources[0].structural_elements} >= {
         "include",
         "constant",
@@ -84,3 +85,4 @@ def test_cli_outputs_json_for_masm_parse() -> None:
     payload = json.loads(result.stdout)
     assert payload["summary"]["source_count"] == 1
     assert payload["sources"][0]["status"] == "succeeded"
+    assert payload["sources"][0]["parser_version"].startswith("masm-hybrid-parser@")

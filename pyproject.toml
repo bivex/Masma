@@ -8,7 +8,9 @@ version = "0.1.0"
 description = "A hexagonal MASM parser and Nassi-Shneiderman diagram generator."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+  "antlr4-python3-runtime==4.13.2",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -31,3 +33,6 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+exclude = [
+  "src/masma/infrastructure/antlr/generated/masm",
+]

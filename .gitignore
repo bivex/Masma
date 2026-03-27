@@ -2,8 +2,8 @@
 __pycache__/
 .pytest_cache/
 .ruff_cache/
+.cache/
 *.pyc
 *.egg-info/
 build/
 dist/
-src/swifta/infrastructure/antlr/generated/swift5/
