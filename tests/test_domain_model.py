@@ -2,11 +2,11 @@ from datetime import UTC, datetime
 
 import pytest
 
-from swifta.domain.errors import EmptyParsingJobError
-from swifta.domain.model import (
-    GrammarVersion,
+from masma.domain.errors import EmptyParsingJobError
+from masma.domain.model import (
     ParseOutcome,
     ParseStatistics,
+    ParserVersion,
     ParsingJob,
     SourceUnit,
     SourceUnitId,
@@ -20,9 +20,9 @@ def test_parsing_job_requires_at_least_one_source_unit() -> None:
 
 def test_parsing_job_tracks_outcomes() -> None:
     source_unit = SourceUnit(
-        identifier=SourceUnitId("/tmp/example.swift"),
-        location="/tmp/example.swift",
-        content="struct Example {}",
+        identifier=SourceUnitId("/tmp/example.asm"),
+        location="/tmp/example.asm",
+        content="main PROC\n    ret\nmain ENDP",
     )
     job = ParsingJob(
         job_id="job-1",
@@ -32,7 +32,7 @@ def test_parsing_job_tracks_outcomes() -> None:
 
     outcome = ParseOutcome.success(
         source_unit=source_unit,
-        grammar_version=GrammarVersion("test"),
+        parser_version=ParserVersion("test"),
         diagnostics=(),
         structural_elements=(),
         statistics=ParseStatistics(
@@ -48,4 +48,3 @@ def test_parsing_job_tracks_outcomes() -> None:
 
     assert job.succeeded_count == 1
     assert job.technical_failure_count == 0
-

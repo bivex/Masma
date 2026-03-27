@@ -1,0 +1,2 @@
+"""Masma package."""
+
