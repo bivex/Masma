@@ -62,6 +62,16 @@ uv run masma nassi-file path/to/program.asm --out output/program.nassi.html
 uv run masma nassi-dir path/to/project --out output/nassi-bundle
 ```
 
+## Screenshots
+
+**Feature-set report** - hybrid parser summary, extracted elements, diagnostics, and recovered control-flow steps in one HTML report:
+
+![Masma feature-set report](docs/screenshots/feature_report.png)
+
+**Nassi-Shneiderman diagram** - MASM procedures rendered from structured directives and recovered jump-based flow:
+
+![Masma Nassi diagram](docs/screenshots/feature_nassi.png)
+
 ## Supported MASM Features
 
 Masma currently understands these structural and flow-level MASM constructs:
