@@ -13,13 +13,13 @@ _COMMENT_MARKER = ";"
 _WHITESPACE_RE = re.compile(r"\s+")
 
 INCLUDE_RE = re.compile(r"^(?P<kind>include|includelib)\s+(?P<target>.+)$", re.IGNORECASE)
-EQU_RE = re.compile(rf"^(?P<name>{_NAME})\s+equ\b(?P<value>.*)$", re.IGNORECASE)
+EQU_RE = re.compile(rf"^(?P<name>{_NAME})\s+(?:equ|=)\b(?P<value>.*)$", re.IGNORECASE)
 PROC_RE = re.compile(rf"^(?P<name>{_NAME})\s+proc\b(?P<tail>.*)$", re.IGNORECASE)
 ENDP_RE = re.compile(rf"^(?P<name>{_NAME})\s+endp\b$", re.IGNORECASE)
 # cmacros.inc-style procedure markers used in older MASM / NT sources
 CPROC_RE = re.compile(rf"^cProc\s+(?P<name>{_NAME})\b(?P<tail>.*)$", re.IGNORECASE)
 CEND_RE = re.compile(r"^cEnd\b", re.IGNORECASE)
-STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struct\b$", re.IGNORECASE)
+STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struc?t?\b$", re.IGNORECASE)
 ENDS_RE = re.compile(rf"^(?P<name>{_NAME})\s+ends\b$", re.IGNORECASE)
 UNION_RE = re.compile(rf"^(?P<name>{_NAME})\s+union\b", re.IGNORECASE)
 MACRO_RE = re.compile(rf"^(?P<name>{_NAME})\s+macro\b(?P<tail>.*)$", re.IGNORECASE)
@@ -397,7 +397,7 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
     from masma.domain.control_flow import StructDefinition, StructField
 
     # Also match bare 'struct' / 'ends' (nested inside UNION, etc.)
-    _BARE_STRUCT_RE = re.compile(r"^\s*struct\s*$", re.IGNORECASE)
+    _BARE_STRUCT_RE = re.compile(r"^\s*struc?t?\s*$", re.IGNORECASE)
     _BARE_ENDS_RE = re.compile(r"^\s*ends\s*$", re.IGNORECASE)
 
     structs: list[StructDefinition] = []
