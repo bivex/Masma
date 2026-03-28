@@ -106,6 +106,11 @@ class IfdefFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class AlignFlowStep(ControlFlowStep):
+    boundary: int  # e.g. 4, 8, 16
+
+
+@dataclass(frozen=True, slots=True)
 class RepeatStringFlowStep(ControlFlowStep):
     prefix: str
     instruction: str
@@ -117,7 +122,8 @@ class FunctionControlFlow:
     signature: str
     container: str | None
     steps: tuple[ControlFlowStep, ...]
-    kind: str = "proc"  # "proc" | "macro"
+    kind: str = "proc"      # "proc" | "macro"
+    segment: str | None = None  # e.g. ".code", "TEXT", None
 
     @property
     def qualified_name(self) -> str:

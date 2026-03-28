@@ -8,6 +8,7 @@ import re
 
 from masma.domain.control_flow import (
     ActionFlowStep,
+    AlignFlowStep,
     CallFlowStep,
     ControlFlowDiagram,
     ControlFlowStep,
@@ -347,6 +348,42 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
       .ns-ifdef {{ border-left: 3px dashed var(--muted); background: var(--surface); }}
       .ns-ifdef > .ns-header {{ background: var(--surface-3); color: var(--muted); font-style: italic; }}
+      .ns-align-marker {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 12px;
+        color: var(--amber);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: rgba(241, 202, 122, 0.05);
+        border-top: 1px dashed rgba(241, 202, 122, 0.25);
+        border-bottom: 1px dashed rgba(241, 202, 122, 0.25);
+      }}
+      .ns-align-marker::before,
+      .ns-align-marker::after {{
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(241, 202, 122, 0.2);
+      }}
+      .segment-badge {{
+        display: inline-block;
+        font-size: 9.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        background: rgba(142, 155, 187, 0.12);
+        border: 1px solid rgba(142, 155, 187, 0.25);
+        border-radius: 999px;
+        padding: 1px 7px;
+        margin-right: 7px;
+        vertical-align: middle;
+        font-family: var(--mono);
+      }}
       .ns-label-marker {{
         display: flex;
         align-items: center;
@@ -740,11 +777,13 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
     def _render_function(self, function) -> str:
         is_macro = getattr(function, "kind", "proc") == "macro"
         panel_class = "function-panel is-macro" if is_macro else "function-panel"
-        badge = '<span class="macro-badge">▷ macro</span>' if is_macro else ""
+        kind_badge = '<span class="macro-badge">▷ macro</span>' if is_macro else ""
+        seg = getattr(function, "segment", None)
+        seg_badge = f'<span class="segment-badge">{escape(seg)}</span>' if seg else ""
         return (
             f'<section class="{panel_class}">'
             '<div class="function-head">'
-            f'<h2 class="function-title">{badge}{escape(function.qualified_name)}</h2>'
+            f'<h2 class="function-title">{seg_badge}{kind_badge}{escape(function.qualified_name)}</h2>'
             f'<div class="function-signature">{escape(function.signature)}</div>'
             "</div>"
             '<div class="function-body">'
@@ -877,6 +916,10 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 f"{self._render_header(header)}"
                 f"{body_html}"
                 "</div>"
+            )
+        if isinstance(step, AlignFlowStep):
+            return (
+                f'<div class="ns-align-marker" aria-label="Align {step.boundary}">⊞ ALIGN {step.boundary}</div>'
             )
         if isinstance(step, LabelFlowStep):
             return (

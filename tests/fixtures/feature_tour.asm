@@ -234,15 +234,17 @@ demo_ifdef PROC
     ret
 demo_ifdef ENDP
 
-; ─── 15. LabelFlowStep (standalone label — not part of any loop or jump) ──────
+; ─── 15. LabelFlowStep + AlignFlowStep ────────────────────────────────────────
 demo_label PROC
     mov  eax, 0
 setup_phase:
     mov  ebx, 1
     mov  ecx, 2
+    align 16
 process_phase:
     add  eax, ebx
     add  eax, ecx
+    align 4
 teardown_phase:
     xor  ebx, ebx
     xor  ecx, ecx

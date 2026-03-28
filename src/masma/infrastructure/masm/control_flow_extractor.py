@@ -6,6 +6,7 @@ import re
 
 from masma.domain.control_flow import (
     ActionFlowStep,
+    AlignFlowStep,
     CallFlowStep,
     ControlFlowDiagram,
     ForInFlowStep,
@@ -24,6 +25,7 @@ from masma.domain.control_flow import (
 from masma.domain.model import SourceUnit
 from masma.domain.ports import ControlFlowExtractor
 from masma.infrastructure.masm.support import (
+    ALIGN_RE,
     COND_ASSEMBLE_RE,
     COND_ASSEMBLE_PARSE_RE,
     ELSEIF_RE,
@@ -149,6 +151,7 @@ def _extract_procedure(procedure, *, macro_names: frozenset[str] = frozenset()) 
         container=None,
         steps=steps,
         kind="proc",
+        segment=procedure.segment,
     )
 
 
@@ -168,6 +171,7 @@ def _extract_macro(macro, *, macro_names: frozenset[str] = frozenset()) -> Funct
         container=None,
         steps=steps,
         kind="macro",
+        segment=macro.segment,
     )
 
 
@@ -331,6 +335,12 @@ def _parse_sequence(
                 steps.append(MacroCallFlowStep(target=target, args=args))
                 index += 1
                 continue
+
+        align_match = ALIGN_RE.match(line.text)
+        if align_match is not None:
+            steps.append(AlignFlowStep(boundary=int(align_match.group("boundary"))))
+            index += 1
+            continue
 
         label_match = LABEL_RE.match(line.text)
         if label_match is not None:

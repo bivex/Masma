@@ -47,6 +47,7 @@ WHILE_RE = re.compile(r"^\.while\b(?P<condition>.*)$", re.IGNORECASE)
 ENDW_RE = re.compile(r"^\.endw\b$", re.IGNORECASE)
 REPEAT_RE = re.compile(r"^\.repeat\b$", re.IGNORECASE)
 UNTIL_RE = re.compile(r"^\.(?P<kind>until|untilcxz)\b(?P<condition>.*)$", re.IGNORECASE)
+ALIGN_RE = re.compile(r"^align\s+(?P<boundary>\d+)$", re.IGNORECASE)
 
 DATA_DIRECTIVES = {".data", ".data?", ".const"}
 CODE_DIRECTIVES = {".code"}
@@ -80,6 +81,7 @@ class MacroBlock:
     signature: str
     line: int
     body_lines: tuple[SourceLine, ...]
+    segment: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +90,7 @@ class ProcedureBlock:
     signature: str
     line: int
     body_lines: tuple[SourceLine, ...]
+    segment: str | None = None
 
 
 def extract_file_header(lines: tuple[SourceLine, ...]) -> str | None:
@@ -264,9 +267,17 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
     current_name: str | None = None
     current_signature = ""
     current_line = 0
+    current_segment: str | None = None
     body: list[SourceLine] = []
 
     for line in lines:
+        if not line.text:
+            continue
+
+        seg = classify_segment(line)
+        if seg is not None:
+            current_segment = seg
+
         if current_name is None:
             proc_match = PROC_RE.match(line.text)
             if proc_match is None:
@@ -285,6 +296,7 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
                     signature=current_signature,
                     line=current_line,
                     body_lines=tuple(body),
+                    segment=current_segment,
                 )
             )
             current_name = None
@@ -302,6 +314,7 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
                 signature=current_signature,
                 line=current_line,
                 body_lines=tuple(body),
+                segment=current_segment,
             )
         )
 
@@ -353,11 +366,19 @@ def scan_macro_blocks(lines: tuple[SourceLine, ...]) -> tuple[MacroBlock, ...]:
     current_name: str | None = None
     current_signature = ""
     current_line = 0
+    current_segment: str | None = None
     body: list[SourceLine] = []
-    depth = 0  # track nested MACRO/ENDM pairs inside a body
+    depth = 0
 
     for line in lines:
+        if not line.text:
+            continue
+
         if current_name is None:
+            seg = classify_segment(line)
+            if seg is not None:
+                current_segment = seg
+
             macro_match = MACRO_RE.match(line.text)
             if macro_match is None:
                 continue
@@ -383,6 +404,7 @@ def scan_macro_blocks(lines: tuple[SourceLine, ...]) -> tuple[MacroBlock, ...]:
                 signature=current_signature,
                 line=current_line,
                 body_lines=tuple(body),
+                segment=current_segment,
             ))
             current_name = None
             body = []
