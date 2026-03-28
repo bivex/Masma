@@ -1,7 +1,8 @@
 ; feature_tour.asm — covers every implemented control-flow step type
 ; Exercises ActionFlowStep, IfFlowStep, WhileFlowStep, RepeatWhileFlowStep,
 ; SwitchFlowStep, ForInFlowStep, InvokeFlowStep, CallFlowStep,
-; MacroCallFlowStep, RepeatStringFlowStep, IfdefFlowStep, LabelFlowStep.
+; MacroCallFlowStep, RepeatStringFlowStep, IfdefFlowStep, LabelFlowStep,
+; LocalDeclFlowStep.
 
 ; ─── Struct definitions ───────────────────────────────────────────────────────
 POINT STRUCT
@@ -251,7 +252,23 @@ teardown_phase:
     ret
 demo_label ENDP
 
-; ─── 16. MacroCallFlowStep (user-defined macro expansion) ─────────────────────
+; ─── 16. LocalDeclFlowStep (stack-frame local variable aliases) ───────────────
+; EQU aliases for bp-relative stack slots — compiler/assembler generated.
+demo_locals PROC
+AllocFlags  equ byte ptr [bp - 2]
+MemSize     equ word ptr [bp - 4]
+BufPtr      equ [bp - 8]
+    push bp
+    mov  bp, sp
+    sub  sp, 8
+    mov  AllocFlags, 0
+    mov  MemSize, 512
+    mov  BufPtr, 0
+    pop  bp
+    ret
+demo_locals ENDP
+
+; ─── 18. MacroCallFlowStep (user-defined macro expansion) ─────────────────────
 demo_macro PROC
     ZERO_REG eax
     ZERO_REG ebx
@@ -261,7 +278,7 @@ demo_macro PROC
     ret
 demo_macro ENDP
 
-; ─── 17. Segments — procs in named and standard segments ──────────────────────
+; ─── 19. Segments — procs in named and standard segments ──────────────────────
 INIT_SEG SEGMENT
 demo_init PROC
     ; runs before main code — a typical init-segment pattern
