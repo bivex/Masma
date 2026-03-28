@@ -48,6 +48,7 @@ ENDW_RE = re.compile(r"^\.endw\b$", re.IGNORECASE)
 REPEAT_RE = re.compile(r"^\.repeat\b$", re.IGNORECASE)
 UNTIL_RE = re.compile(r"^\.(?P<kind>until|untilcxz)\b(?P<condition>.*)$", re.IGNORECASE)
 ALIGN_RE = re.compile(r"^align\s+(?P<boundary>\d+)$", re.IGNORECASE)
+ENTRY_RE = re.compile(rf"^end\s+(?P<name>{_NAME})$", re.IGNORECASE)
 
 DATA_DIRECTIVES = {".data", ".data?", ".const"}
 CODE_DIRECTIVES = {".code"}
@@ -319,6 +320,15 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
         )
 
     return tuple(procedures)
+
+
+def extract_entry_point(lines: tuple[SourceLine, ...]) -> str | None:
+    """Return the name from 'END label' if present, else None."""
+    for line in lines:
+        m = ENTRY_RE.match(line.text)
+        if m:
+            return m.group("name")
+    return None
 
 
 def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:

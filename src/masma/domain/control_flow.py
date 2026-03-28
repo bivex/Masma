@@ -151,4 +151,5 @@ class ControlFlowDiagram:
     functions: tuple[FunctionControlFlow, ...]
     file_header: str | None = None
     structs: tuple[StructDefinition, ...] = ()
+    entry_point: str | None = None
 

@@ -42,6 +42,7 @@ from masma.infrastructure.masm.support import (
     UNTIL_RE,
     WHILE_RE,
     compact_text,
+    extract_entry_point,
     extract_file_header,
     iter_source_lines,
     scan_macro_blocks,
@@ -132,6 +133,7 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
             functions=functions,
             file_header=extract_file_header(lines),
             structs=scan_struct_blocks(lines),
+            entry_point=extract_entry_point(lines),
         )
 
 

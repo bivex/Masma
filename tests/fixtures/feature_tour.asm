@@ -285,4 +285,4 @@ demo_page PROC
 demo_page ENDP
 PAGE_SEG ENDS
 
-END
+END demo_init

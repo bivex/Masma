@@ -51,7 +51,10 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         return "\n".join(rules)
 
     def render(self, diagram: ControlFlowDiagram) -> str:
-        sections = "".join(self._render_function(function) for function in diagram.functions)
+        sections = "".join(
+            self._render_function(function, entry_point=diagram.entry_point)
+            for function in diagram.functions
+        )
         if not sections:
             sections = '<section class="function-panel"><p class="empty-file">No procedures found.</p></section>'
         if diagram.structs:
@@ -383,6 +386,28 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         margin-right: 7px;
         vertical-align: middle;
         font-family: var(--mono);
+      }}
+      .entry-badge {{
+        display: inline-block;
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--green);
+        background: rgba(166, 218, 149, 0.14);
+        border: 1px solid rgba(166, 218, 149, 0.35);
+        border-radius: 999px;
+        padding: 1px 7px;
+        margin-right: 7px;
+        vertical-align: middle;
+      }}
+      .function-panel.is-entry {{
+        border-color: rgba(166, 218, 149, 0.35);
+      }}
+      .function-panel.is-entry .function-head {{
+        border-bottom-color: rgba(166, 218, 149, 0.3);
+        background:
+          linear-gradient(180deg, rgba(166, 218, 149, 0.07), rgba(255,255,255,0)),
+          var(--surface-3);
       }}
       .ns-label-marker {{
         display: flex;
@@ -774,16 +799,26 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
             '</div>'
         )
 
-    def _render_function(self, function) -> str:
+    def _render_function(self, function, *, entry_point: str | None = None) -> str:
         is_macro = getattr(function, "kind", "proc") == "macro"
-        panel_class = "function-panel is-macro" if is_macro else "function-panel"
+        is_entry = (
+            entry_point is not None
+            and function.name.lower() == entry_point.lower()
+            and not is_macro
+        )
+        panel_class = "function-panel"
+        if is_macro:
+            panel_class += " is-macro"
+        if is_entry:
+            panel_class += " is-entry"
         kind_badge = '<span class="macro-badge">▷ macro</span>' if is_macro else ""
+        entry_badge = '<span class="entry-badge">▶ entry</span>' if is_entry else ""
         seg = getattr(function, "segment", None)
         seg_badge = f'<span class="segment-badge">{escape(seg)}</span>' if seg else ""
         return (
             f'<section class="{panel_class}">'
             '<div class="function-head">'
-            f'<h2 class="function-title">{seg_badge}{kind_badge}{escape(function.qualified_name)}</h2>'
+            f'<h2 class="function-title">{seg_badge}{kind_badge}{entry_badge}{escape(function.qualified_name)}</h2>'
             f'<div class="function-signature">{escape(function.signature)}</div>'
             "</div>"
             '<div class="function-body">'
