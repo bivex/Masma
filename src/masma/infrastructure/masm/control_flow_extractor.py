@@ -64,8 +64,25 @@ from masma.infrastructure.masm.support import (
 )
 
 _COMPARE_RE = re.compile(r"^(?P<op>cmp|test)\s+(?P<lhs>[^,]+)\s*,\s*(?P<rhs>.+)$", re.IGNORECASE)
-_COND_JUMP_RE = re.compile(r"^(?P<op>j(?:e|z|ne|nz|g|ge|l|le|a|ae|b|be|c|nc|na|nae|nb|nbe|ng|nge|nl|nle))\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$", re.IGNORECASE)
+_COND_JUMP_RE = re.compile(
+    r"^(?P<op>j(?:"
+    r"e|z|ne|nz"           # equal / zero
+    r"|g|ge|l|le"          # signed comparison
+    r"|ng|nge|nl|nle"      # negated signed
+    r"|a|ae|b|be"          # unsigned comparison
+    r"|na|nae|nb|nbe"      # negated unsigned
+    r"|c|nc"               # carry
+    r"|o|no"               # overflow
+    r"|s|ns"               # sign
+    r"|p|pe|np|po"         # parity
+    r"|cxz|ecxz|rcxz"     # count-register zero (no FLAGS used)
+    r"))\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$",
+    re.IGNORECASE,
+)
+# Used for structural loop/switch detection — symbolic labels only
 _JMP_RE = re.compile(r"^jmp\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$", re.IGNORECASE)
+# Used for JumpFlowStep — any jmp form: label, register, memory indirect, far
+_JMP_ANY_RE = re.compile(r"^jmp(?:f|s)?\s+(?P<target>.+)$", re.IGNORECASE)
 _LOOP_INSTR_RE = re.compile(
     r"^(?P<op>loop(?:e|ne|z|nz)?)\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$",
     re.IGNORECASE,
@@ -472,10 +489,10 @@ def _parse_sequence(
                 continue
 
         # Unstructured jumps — didn't form if/while/switch above
-        jmp_m = _JMP_RE.match(line.text)
+        jmp_m = _JMP_ANY_RE.match(line.text)
         if jmp_m is not None:
             steps.append(JumpFlowStep(
-                target=jmp_m.group("label"),
+                target=jmp_m.group("target").strip(),
                 condition=None,
                 source=compact_text(line.text),
             ))

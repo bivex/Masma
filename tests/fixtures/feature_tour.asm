@@ -256,14 +256,35 @@ demo_label ENDP
 ; Jumps that don't form a recognized if/while/switch block.
 demo_jumps PROC
     mov  eax, 0
+    ; signed comparison jumps
     cmp  eax, 0
-    jz   skip_block          ; conditional branch — yellow
-    mov  ebx, 1
+    jz   skip_block          ; equal/zero
+    jnz  skip_block          ; not zero
+    jg   skip_block          ; greater
+    jge  skip_block          ; greater or equal
+    jl   skip_block          ; less
+    jle  skip_block          ; less or equal
+    ; unsigned comparison jumps
+    ja   skip_block          ; above
+    jae  skip_block          ; above or equal
+    jb   skip_block          ; below
+    jbe  skip_block          ; below or equal
+    ; flag jumps
+    jo   skip_block          ; overflow
+    jno  skip_block          ; no overflow
+    js   skip_block          ; sign (negative)
+    jns  skip_block          ; no sign (positive)
+    jp   skip_block          ; parity even
+    jnp  skip_block          ; parity odd
+    ; count-register jumps (no FLAGS)
+    jcxz  skip_block         ; CX == 0
+    jecxz skip_block         ; ECX == 0
 skip_block:
-    cmp  eax, 10
-    jge  end_proc            ; conditional branch — yellow
-    inc  eax
-    jmp  skip_block          ; unconditional goto — red
+    ; unconditional jumps
+    jmp  skip_block          ; symbolic label — red
+    jmp  eax                 ; register indirect — red
+    jmp  [ebx]               ; memory indirect — red
+    jmpf far_target          ; far jump — red
 end_proc:
     ret
 demo_jumps ENDP
