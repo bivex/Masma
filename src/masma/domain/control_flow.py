@@ -82,6 +82,11 @@ class InvokeFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class CallFlowStep(ControlFlowStep):
+    target: str
+
+
+@dataclass(frozen=True, slots=True)
 class RepeatStringFlowStep(ControlFlowStep):
     prefix: str
     instruction: str

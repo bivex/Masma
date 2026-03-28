@@ -48,7 +48,7 @@ def test_nassi_service_builds_html_document_for_masm() -> None:
     assert "score" in document.procedure_names
     assert "normalize" in document.procedure_names
     assert "While eax &lt; 100" in document.html
-    assert "UNTIL eax == 42" in document.html
+    assert "UNTIL eax = 42" in document.html
     assert "Masma" in document.html
 
 
@@ -120,7 +120,7 @@ jumpy ENDP
     assert steps[0].condition == "eax < 10"
     assert [step.label for step in steps[0].body_steps] == ["inc eax"]
     assert isinstance(steps[1], IfFlowStep)
-    assert steps[1].condition == "ebx & ebx != 0"
+    assert steps[1].condition == "ebx & ebx ≠ 0"
     assert [step.label for step in steps[1].then_steps] == ["inc ecx"]
     assert [step.label for step in steps[1].else_steps] == ["dec ecx"]
     assert steps[2].label == "ret"
@@ -339,13 +339,13 @@ copier ENDP
     )
     diagram = extractor.extract(source)
     steps = diagram.functions[0].steps
-    # mov ecx, 16 becomes ActionFlowStep
+    # mov ecx, 16 and mov ecx, 32 are absorbed by the following rep instructions
+    assert isinstance(steps[0], RepeatStringFlowStep)
+    assert steps[0].prefix == "REP"
+    assert steps[0].instruction == "movsd"
     assert isinstance(steps[1], RepeatStringFlowStep)
-    assert steps[1].prefix == "REP"
-    assert steps[1].instruction == "movsd"
-    assert isinstance(steps[3], RepeatStringFlowStep)
-    assert steps[3].prefix == "REPNE"
-    assert steps[3].instruction == "scasb"
+    assert steps[1].prefix == "REPNE"
+    assert steps[1].instruction == "scasb"
 
 
 def test_renderer_renders_invoke_and_repeat_string_steps() -> None:
@@ -370,3 +370,46 @@ def test_renderer_renders_invoke_and_repeat_string_steps() -> None:
     assert "REP movsd" in html
     assert "ns-invoke" in html
     assert "ns-repeat" in html
+
+
+def test_control_flow_extractor_produces_call_step_for_direct_call() -> None:
+    from masma.domain.control_flow import CallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("call-flow"),
+        location="call-flow.asm",
+        content="""
+caller PROC
+    call SomeProcedure
+    call [ebx]
+    ret
+caller ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], CallFlowStep)
+    assert steps[0].target == "SomeProcedure"
+    # indirect call stays as ActionFlowStep
+    assert isinstance(steps[1], ActionFlowStep)
+    assert steps[1].label == "call [ebx]"
+
+
+def test_control_flow_extractor_absorbs_mov_ecx_before_rep() -> None:
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("repabs"),
+        location="repabs.asm",
+        content="""
+copier PROC
+    mov ecx, 16
+    rep movsd
+    ret
+copier ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    # mov ecx, 16 must be absorbed — first step should be RepeatStringFlowStep
+    assert isinstance(steps[0], RepeatStringFlowStep)
+    assert steps[0].instruction == "movsd"

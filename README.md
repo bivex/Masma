@@ -84,12 +84,13 @@ Masma currently understands these structural and flow-level MASM constructs:
 * `.REPEAT/.UNTIL` and `.REPEAT/.UNTILCXZ`
 * heuristic recovery of common jump-based flow:
   `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, label-based `jcc/jmp` loop patterns,
-  2+ `cmp reg, val` + `je label` chains for `switch`, and `loop label` for ECX-counted loops
+  2+ `cmp reg, val` + `je label` chains for `switch`, `loop label` for ECX-counted loops,
+  and direct `call proc` as a highlighted procedure-call step
 * an ANTLR-backed structural parser derived from the upstream `grammars-v4` MASM grammar and patched for Masma's working subset
 
 ### Control flow step types
 
-The domain and renderer define the following step types. Eight are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
+The domain and renderer define the following step types. Nine are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
 
 | Step type | Status | Notes |
 |---|---|---|
@@ -100,6 +101,7 @@ The domain and renderer define the following step types. Eight are fully produce
 | `SwitchFlowStep` / `SwitchCaseFlow` | implemented | 2+ `cmp reg, val` + `je label` chains with same register |
 | `ForInFlowStep` | implemented | MASM `loop` instruction (decrements ECX, jumps if non-zero) |
 | `InvokeFlowStep` | implemented | MASM `INVOKE proc, args` macro call |
+| `CallFlowStep` | implemented | direct `call proc` instruction (not indirect `call [reg]`) |
 | `RepeatStringFlowStep` | implemented | `REP`/`REPE`/`REPNE` string instructions (`rep movsd`, `rep stosb`, etc.) |
 | `GuardFlowStep` | not applicable | early-exit guard has no clean linear mapping in MASM |
 | `DoCatchFlowStep` / `CatchClauseFlow` | not applicable | structured exception handling has no natural MASM directive equivalent |

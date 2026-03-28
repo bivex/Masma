@@ -8,6 +8,7 @@ import re
 
 from masma.domain.control_flow import (
     ActionFlowStep,
+    CallFlowStep,
     ControlFlowDiagram,
     ControlFlowStep,
     DeferFlowStep,
@@ -303,6 +304,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-defer   {{ background: var(--defer-fill); }}
       .ns-invoke  {{ background: var(--surface-2); border-left: 3px solid var(--green); }}
       .ns-invoke  > .ns-label {{ background: rgba(166, 218, 149, 0.10); }}
+      .ns-ret {{ border-left: 3px solid var(--red); }}
+      .ns-ret > .ns-label {{ background: rgba(255, 147, 169, 0.08); }}
 
       .ns-guard   > .ns-header {{ background: var(--orange-dim); color: var(--orange); }}
       .ns-switch  > .ns-header,
@@ -572,8 +575,10 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
 
     def _render_step(self, step: ControlFlowStep, *, depth: int) -> str:
         if isinstance(step, ActionFlowStep):
+            is_ret = step.label.lower() in ("ret", "retn", "retf")
+            css = "ns-node ns-action ns-ret" if is_ret else "ns-node ns-action"
             return (
-                '<div class="ns-node ns-action">'
+                f'<div class="{css}">'
                 f'<div class="ns-label" aria-label="Action {escape(step.label)}">'
                 f'<code class="action-text">{escape(step.label)}</code>'
                 "</div>"
@@ -657,6 +662,15 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 "</div>"
                 "</div>"
             )
+        if isinstance(step, CallFlowStep):
+            label = f"⇒ call {step.target}"
+            return (
+                '<div class="ns-node ns-invoke">'
+                f'<div class="ns-label" aria-label="Call {escape(step.target)}">'
+                f'<code class="action-text">{escape(label)}</code>'
+                "</div>"
+                "</div>"
+            )
         if isinstance(step, RepeatStringFlowStep):
             label = f"⊛ {step.prefix.upper()} {step.instruction.lower()}"
             return (
@@ -665,14 +679,6 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 "</div>"
             )
         raise TypeError(f"unsupported step type: {type(step)!r}")
-
-    def _render_case(self, case: SwitchCaseFlow) -> str:
-        return (
-            '<div class="case">'
-            f"{self._render_case_title(case.label)}"
-            f"{self._render_sequence(case.steps, depth=2)}"
-            "</div>"
-        )
 
     def _render_single_body(
         self,

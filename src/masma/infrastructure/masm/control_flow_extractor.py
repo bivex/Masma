@@ -6,6 +6,7 @@ import re
 
 from masma.domain.control_flow import (
     ActionFlowStep,
+    CallFlowStep,
     ControlFlowDiagram,
     ForInFlowStep,
     IfFlowStep,
@@ -52,32 +53,36 @@ _REP_INSTR_RE = re.compile(
     r"^(?P<prefix>rep(?:e|ne|z|nz)?)\s+(?P<instr>movs[bwdq]?|stos[bwdq]?|lods[bwdq]?|scas[bwdq]?|cmps[bwdq]?)$",
     re.IGNORECASE,
 )
+_CALL_RE = re.compile(
+    r"^call\s+(?P<target>[A-Za-z_.$?@][\w.$?@]*)$",
+    re.IGNORECASE,
+)
 
 _CMP_PREDICATES = {
-    "je": "==",
-    "jz": "==",
-    "jne": "!=",
-    "jnz": "!=",
+    "je": "=",
+    "jz": "=",
+    "jne": "≠",
+    "jnz": "≠",
     "jg": ">",
     "jnle": ">",
-    "jge": ">=",
-    "jnl": ">=",
+    "jge": "≥",
+    "jnl": "≥",
     "jl": "<",
     "jnge": "<",
-    "jle": "<=",
-    "jng": "<=",
+    "jle": "≤",
+    "jng": "≤",
     "ja": ">",
     "jnbe": ">",
-    "jae": ">=",
-    "jnb": ">=",
-    "jnc": ">=",
+    "jae": "≥",
+    "jnb": "≥",
+    "jnc": "≥",
     "jb": "<",
     "jnae": "<",
     "jc": "<",
-    "jbe": "<=",
-    "jna": "<=",
+    "jbe": "≤",
+    "jna": "≤",
 }
-_INVERSE_OPERATORS = {"==": "!=", "!=": "==", ">": "<=", ">=": "<", "<": ">=", "<=": ">"}
+_INVERSE_OPERATORS = {"=": "≠", "≠": "=", ">": "≤", "≥": "<", "<": "≥", "≤": ">"}
 
 
 class MasmControlFlowExtractor(ControlFlowExtractor):
@@ -221,10 +226,23 @@ def _parse_sequence(
 
         rep_match = _REP_INSTR_RE.match(line.text)
         if rep_match is not None:
-            steps.append(RepeatStringFlowStep(
+            rep_step = RepeatStringFlowStep(
                 prefix=rep_match.group("prefix").upper(),
                 instruction=rep_match.group("instr").lower(),
-            ))
+            )
+            if (
+                steps
+                and isinstance(steps[-1], ActionFlowStep)
+                and _MOV_ECX_RE.match(steps[-1].label)
+            ):
+                steps.pop()
+            steps.append(rep_step)
+            index += 1
+            continue
+
+        call_match = _CALL_RE.match(line.text)
+        if call_match is not None:
+            steps.append(CallFlowStep(target=call_match.group("target")))
             index += 1
             continue
 
@@ -326,7 +344,7 @@ def _parse_repeat(lines, index: int, *, label_positions, end_index: int):
         if match is not None:
             suffix = match.group("condition").strip()
             keyword = match.group("kind").upper()
-            condition = compact_text(f"{keyword} {suffix}".strip(), limit=100)
+            condition = _prettify_condition(compact_text(f"{keyword} {suffix}".strip(), limit=100))
             index += 1
     return RepeatWhileFlowStep(condition=condition, body_steps=body_steps), index
 
@@ -348,8 +366,22 @@ def _line_token(text: str) -> str:
     return ""
 
 
+_COND_UNICODE = [
+    (" != ", " ≠ "),
+    (" == ", " = "),
+    (" >= ", " ≥ "),
+    (" <= ", " ≤ "),
+]
+
+
+def _prettify_condition(text: str) -> str:
+    for ascii_op, unicode_op in _COND_UNICODE:
+        text = text.replace(ascii_op, unicode_op)
+    return text
+
+
 def _condition_text(text: str) -> str:
-    return compact_text(text.strip() or "condition", limit=100)
+    return _prettify_condition(compact_text(text.strip() or "condition", limit=100))
 
 
 def _should_skip(text: str) -> bool:
@@ -667,7 +699,7 @@ def _infer_jump_condition(*, compare_line: str | None, jump_line: str, invert: b
     rhs = compact_text(compare_match.group("rhs").strip(), limit=40)
 
     if compare_op == "test":
-        base = f"{lhs} & {rhs} {'==' if jump_op in {'je', 'jz'} else '!='} 0"
+        base = f"{lhs} & {rhs} {'=' if jump_op in {'je', 'jz'} else '≠'} 0"
     else:
         operator = _CMP_PREDICATES.get(jump_op)
         if operator is None:
