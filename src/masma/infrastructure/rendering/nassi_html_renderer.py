@@ -64,6 +64,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 f'<div class="file-header-block">{escape(diagram.file_header)}</div>'
             )
             sections = header_block + sections
+        # File overview section: includes, externals, publics, segments, constants| variables
+        sections = self._render_file_overview(diagram) + sections
 
         return f"""<!DOCTYPE html>
 <html lang="en">
@@ -406,6 +408,65 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         margin-right: 7px;
         vertical-align: middle;
         font-family: var(--mono);
+      }}
+      /* ── File overview panel ── */
+      .file-overview {{
+        margin-bottom: 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(10, 15, 24, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+        overflow: hidden;
+      }}
+      .file-overview-head {{
+        padding: 10px 16px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+          var(--surface-3);
+        border-bottom: 1px solid var(--border-strong);
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text-bright);
+      }}
+      .file-overview-grid {{
+        padding: 12px 16px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
+      }}
+      .overview-card {{
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--surface);
+      }}
+      .overview-card-title {{
+        font-size: 9.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+      }}
+      .overview-card-title.inc {{ color: #56d4dd; }}
+      .overview-card-title.ext {{ color: var(--orange); }}
+      .overview-card-title.pub {{ color: var(--green); }}
+      .overview-card-title.seg {{ color: var(--amber); }}
+      .overview-card-title.const {{ color: var(--purple); }}
+      .overview-card-title.var {{ color: var(--teal); }}
+      .overview-card-list {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+      }}
+      .overview-tag {{
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text);
+        background: var(--surface-2);
+        border: 1px solid var(--border-soft);
+        border-radius: 4px;
+        padding: 2px 6px;
+        white-space: nowrap;
       }}
       .entry-badge {{
         display: inline-block;
@@ -792,6 +853,45 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
   </body>
 </html>
 """
+
+    def _render_file_overview(self, diagram: ControlFlowDiagram) -> str:
+        cards: list[str] = []
+
+        def _tag_list(items: tuple[str, ...], css_class: str) -> str:
+            if not items:
+                return ""
+            tags = "".join(
+                f'<span class="overview-tag">{escape(t)}</span>'
+                for t in items
+            )
+            return f'<div class="overview-card-list">{tags}</div>'
+
+        def _card(title: str, items: tuple[str, ...], css_class: str) -> str:
+            content = _tag_list(items, css_class)
+            if not content:
+                return ""
+            return (
+                f'<div class="overview-card">'
+                f'<div class="overview-card-title {css_class}">{title}</div>'
+                f'{content}'
+                f'</div>'
+            )
+
+        cards.append(_card("Includes", diagram.includes, "inc"))
+        cards.append(_card("Externals", diagram.externals, "ext"))
+        cards.append(_card("Publics", diagram.publics, "pub"))
+        cards.append(_card("Segments", diagram.segments, "seg"))
+        cards.append(_card("Constants", diagram.constants, "const"))
+        cards.append(_card("Variables", diagram.variables, "var"))
+        filtered = [c for c in cards if c]
+        if not filtered:
+            return ""
+        return (
+            '<div class="file-overview">'
+            '<div class="file-overview-head">File Overview</div>'
+            f'<div class="file-overview-grid">{"".join(filtered)}</div>'
+            '</div>'
+        )
 
     def _render_structs(self, structs: tuple[StructDefinition, ...]) -> str:
         cards = []

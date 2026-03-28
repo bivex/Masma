@@ -28,6 +28,8 @@ from masma.infrastructure.masm.support import (
     ALIGN_RE,
     COND_ASSEMBLE_RE,
     COND_ASSEMBLE_PARSE_RE,
+    EQU_RE,
+    EXTERN_RE,
     ELSE_BARE_RE,
     ELSEIF_BARE_RE,
     ELSEIF_RE,
@@ -37,11 +39,15 @@ from masma.infrastructure.masm.support import (
     ENDW_RE,
     IF_RE,
     IGNORED_ACTION_DIRECTIVES,
+    INCLUDE_RE,
     LABEL_RE,
     MACRO_RE,
     PROC_RE,
+    PUBLIC_RE,
     REPEAT_RE,
+    SEGMENT_RE,
     UNTIL_RE,
+    VARIABLE_RE,
     WHILE_RE,
     compact_text,
     extract_entry_point,
@@ -120,6 +126,36 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
         procedures = scan_procedure_blocks(lines)
         macro_blocks = scan_macro_blocks(lines)
         macro_names = _scan_macro_names(lines)
+
+        # Collect top-level declarations info
+        includes: list[str] = []
+        externals: list[str] = []
+        publics: list[str] = []
+        segments: list[str] = []
+        constants: list[str] = []
+        variables: list[str] = []
+
+        for line in lines:
+            if m := INCLUDE_RE.match(line.text):
+                includes.append(m.group("target").strip())
+            elif m := EXTERN_RE.match(line.text):
+                externals.append(m.group("name").strip())
+            elif m := PUBLIC_RE.match(line.text):
+                for name in (n.strip() for n in m.group("names").split(",")):
+                    if name:
+                        publics.append(name)
+            elif m := EQU_RE.match(line.text):
+                constants.append(m.group("name").strip())
+            elif m := VARIABLE_RE.match(line.text):
+                variables.append(m.group("name").strip())
+
+            seg_match = SEGMENT_RE.match(line.text)
+            if seg_match:
+                if seg_match.group("name"):
+                    segments.append(seg_match.group("name"))
+                elif seg_match.group("directive"):
+                    segments.append(seg_match.group("directive"))
+
         proc_flows = tuple(
             _extract_procedure(procedure, macro_names=macro_names)
             for procedure in procedures
@@ -136,6 +172,12 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
             file_header=extract_file_header(lines),
             structs=scan_struct_blocks(lines),
             entry_point=extract_entry_point(lines),
+            includes=tuple(dict.fromkeys(sorted(set(includes)))),
+            externals=tuple(dict.fromkeys(sorted(set(externals)))),
+            publics=tuple(dict.fromkeys(sorted(set(publics)))),
+            segments=tuple(dict.fromkeys(sorted(set(segments)))),
+            constants=tuple(dict.fromkeys(sorted(set(constants)))),
+            variables=tuple(dict.fromkeys(sorted(set(variables)))),
         )
 
 

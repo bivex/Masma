@@ -159,4 +159,10 @@ class ControlFlowDiagram:
     file_header: str | None = None
     structs: tuple[StructDefinition, ...] = ()
     entry_point: str | None = None
+    includes: tuple[str, ...] = ()
+    externals: tuple[str, ...] = ()
+    publics: tuple[str, ...] = ()
+    segments: tuple[str, ...] = ()
+    constants: tuple[str, ...] = ()
+    variables: tuple[str, ...] = ()
 
