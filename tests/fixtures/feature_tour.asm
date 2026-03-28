@@ -192,7 +192,36 @@ proc_next:
     ret
 demo_composite ENDP
 
-; ─── 13. LabelFlowStep (standalone label — not part of any loop or jump) ──────
+; ─── 13. CallFlowStep (direct call proc) ─────────────────────────────────────
+demo_call PROC
+    call demo_action
+    call demo_while
+    ; indirect call [reg] stays as ActionFlowStep
+    call eax
+    ret
+demo_call ENDP
+
+; ─── 14. IfdefFlowStep (assembly-time IFDEF / IFNDEF conditional) ─────────────
+IFDEF DEBUG32
+    DEBUG_FLAG EQU 1
+ENDIF
+
+demo_ifdef PROC
+    mov  eax, 0
+    IFDEF DEBUG32
+        int  3
+        mov  eax, 0DEADBEEFh
+    ENDIF
+    IFNDEF RELEASE
+        mov  ebx, 1
+    ENDIF
+    IF DEBUG_FLAG
+        call demo_action
+    ENDIF
+    ret
+demo_ifdef ENDP
+
+; ─── 15. LabelFlowStep (standalone label — not part of any loop or jump) ──────
 demo_label PROC
     mov  eax, 0
 setup_phase:
@@ -207,7 +236,7 @@ teardown_phase:
     ret
 demo_label ENDP
 
-; ─── 14. MacroCallFlowStep (user-defined macro expansion) ─────────────────────
+; ─── 16. MacroCallFlowStep (user-defined macro expansion) ─────────────────────
 demo_macro PROC
     ZERO_REG eax
     ZERO_REG ebx
