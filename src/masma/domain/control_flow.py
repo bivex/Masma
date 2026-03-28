@@ -28,6 +28,13 @@ class LabelFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class LocalDeclFlowStep(ControlFlowStep):
+    name: str       # e.g. "AllocFlags"
+    type_info: str   # e.g. "byte ptr [bp - 2]", "[bp - 8]", "DWORD"
+    source: str      # full line text
+
+
+@dataclass(frozen=True, slots=True)
 class IfFlowStep(ControlFlowStep):
     condition: str
     then_steps: tuple[ControlFlowStep, ...]

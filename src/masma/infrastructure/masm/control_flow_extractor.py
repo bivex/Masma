@@ -17,6 +17,7 @@ from masma.domain.control_flow import (
     StackFlowStep,
     InvokeFlowStep,
     LabelFlowStep,
+    LocalDeclFlowStep,
     MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
@@ -87,6 +88,14 @@ _MACRO_CALL_RE = re.compile(
 )
 _PUSH_RE = re.compile(r"^push(?:w|d|q)?\s+(?P<operand>.+)$", re.IGNORECASE)
 _POP_RE = re.compile(r"^pop(?:w|d|q)?\s+(?P<operand>.+)$", re.IGNORECASE)
+# Local variable declarations:
+#   "AllocFlag equ byte ptr [bp - 2]"
+#   "MemSize equ [bp - 8]"
+#   "local dw ?"  (from ml.exe-generated prologues)
+_LOCAL_DECL_RE = re.compile(
+    r"^(?P<name>[A-Za-z_@$][A-Za-z0-9_@$?]*)\s+equ\s+(?P<typeinfo>.+)$",
+    re.IGNORECASE,
+)
 
 _CMP_PREDICATES = {
     "je": "=",
@@ -445,6 +454,21 @@ def _parse_sequence(
             ))
             index += 1
             continue
+
+        # Local variable declarations: "AllocFlag equ byte ptr [bp - 2]", "MemSize equ [bp - 8]"
+        local_m = _LOCAL_DECL_RE.match(line.text)
+        if local_m is not None:
+            typeinfo = local_m.group("typeinfo").strip()
+            lowered_ti = typeinfo.lower()
+            # Only match stack-frame aliases, not regular EQU constants
+            if "[bp" in lowered_ti or "ptr" in lowered_ti:
+                steps.append(LocalDeclFlowStep(
+                    name=local_m.group("name"),
+                    type_info=typeinfo,
+                    source=compact_text(line.text),
+                ))
+                index += 1
+                continue
 
         steps.append(ActionFlowStep(label=compact_text(line.text)))
         index += 1

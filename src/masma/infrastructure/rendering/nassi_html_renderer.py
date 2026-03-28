@@ -20,6 +20,7 @@ from masma.domain.control_flow import (
     IfFlowStep,
     InvokeFlowStep,
     LabelFlowStep,
+    LocalDeclFlowStep,
     MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
@@ -388,6 +389,12 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         margin-left: auto;
         flex-shrink: 0;
       }}
+      /* ── Local variable declarations ── */
+      .ns-local-decl {{ background: rgba(10, 15, 24, 0.5); border-left: 3px solid rgba(142, 155, 187, 0.35); opacity: 0.75; }}
+      .ns-local-decl > .ns-label {{ display: flex; align-items: center; gap: 6px; font-style: italic; }}
+      .local-decl-icon {{ font-size: 12px; color: var(--muted); width: 16px; text-align: center; }}
+      .local-decl-name {{ font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }}
+      .local-decl-type {{ font-family: var(--mono); font-size: 11px; color: var(--muted); }}
       .ns-macro  {{ background: var(--surface-2); border-left: 3px solid var(--purple); }}
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
       .ns-ifdef {{ border-left: 3px dashed var(--muted); background: var(--surface); }}
@@ -989,6 +996,16 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 f'{depth_badge}'
                 f"</div>"
                 f"</div>"
+            )
+        if isinstance(step, LocalDeclFlowStep):
+            return (
+                '<div class="ns-node ns-local-decl">'
+                f'<div class="ns-label" aria-label="Local variable {escape(step.name)}">'
+                f'<span class="local-decl-icon">≡</span>'
+                f'<code class="local-decl-name">{escape(step.name)}</code>'
+                f'<code class="local-decl-type">{escape(step.type_info)}</code>'
+                "</div>"
+                "</div>"
             )
         if isinstance(step, ActionFlowStep):
             is_ret = step.label.lower() in ("ret", "retn", "retf")
