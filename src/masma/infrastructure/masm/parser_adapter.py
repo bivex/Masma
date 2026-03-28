@@ -22,12 +22,14 @@ from masma.infrastructure.antlr.runtime import (
 )
 from masma.infrastructure.masm.support import (
     EQU_RE,
+    EXTERN_RE,
     INCLUDE_RE,
     LABEL_RE,
     MACRO_RE,
     CEND_RE,
     CPROC_RE,
     PROC_RE,
+    PUBLIC_RE,
     STRUCT_RE,
     VARIABLE_RE,
     SourceLine,
@@ -317,6 +319,30 @@ def _extract_structural_elements(lines):
                 column=1,
                 signature=compact_text(line.text),
             )
+            continue
+
+        if extern_match := EXTERN_RE.match(line.text):
+            yield StructuralElement(
+                kind=StructuralElementKind.EXTERNAL,
+                name=extern_match.group("name"),
+                line=line.number,
+                column=1,
+                container=current_segment,
+                signature=compact_text(line.text),
+            )
+            continue
+
+        if public_match := PUBLIC_RE.match(line.text):
+            for name in (n.strip() for n in public_match.group("names").split(",")):
+                if name:
+                    yield StructuralElement(
+                        kind=StructuralElementKind.PUBLIC,
+                        name=name,
+                        line=line.number,
+                        column=1,
+                        container=current_segment,
+                        signature=name,
+                    )
             continue
 
         if equ_match := EQU_RE.match(line.text):

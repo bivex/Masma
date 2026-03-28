@@ -42,6 +42,8 @@ class StructuralElementKind(StrEnum):
     MACRO = "macro"
     LABEL = "label"
     SEGMENT = "segment"
+    EXTERNAL = "external"
+    PUBLIC = "public"
 
 
 @dataclass(frozen=True, slots=True)

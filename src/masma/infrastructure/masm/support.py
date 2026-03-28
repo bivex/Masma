@@ -55,6 +55,16 @@ REPEAT_RE = re.compile(r"^\.repeat\b$", re.IGNORECASE)
 UNTIL_RE = re.compile(r"^\.(?P<kind>until|untilcxz)\b(?P<condition>.*)$", re.IGNORECASE)
 ALIGN_RE = re.compile(r"^align\s+(?P<boundary>\d+)$", re.IGNORECASE)
 ENTRY_RE = re.compile(rf"^end\s+(?P<name>{_NAME})$", re.IGNORECASE)
+# extrn / externFP / externNP — external symbol references
+EXTERN_RE = re.compile(
+    rf"^(?:extrn|externFP|externNP)\s+(?P<name>{_NAME})(?P<tail>.*)$",
+    re.IGNORECASE,
+)
+# public symbol declarations
+PUBLIC_RE = re.compile(
+    rf"^public\s+(?P<names>.+)$",
+    re.IGNORECASE,
+)
 
 DATA_DIRECTIVES = {".data", ".data?", ".const"}
 CODE_DIRECTIVES = {".code"}
