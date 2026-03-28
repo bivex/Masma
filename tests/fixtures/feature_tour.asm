@@ -3,11 +3,18 @@
 ; SwitchFlowStep, ForInFlowStep, InvokeFlowStep, CallFlowStep,
 ; MacroCallFlowStep, RepeatStringFlowStep, IfdefFlowStep, LabelFlowStep.
 
-.data
-    msg_title   db "Masma", 0
-    msg_body    db "Feature tour", 0
-    src_buf     dd 16 dup(0)
-    dst_buf     dd 16 dup(0)
+; ─── Struct definitions ───────────────────────────────────────────────────────
+POINT STRUCT
+    x   DWORD ?
+    y   DWORD ?
+POINT ENDS
+
+RECT STRUCT
+    left    DWORD ?
+    top     DWORD ?
+    right   DWORD ?
+    bottom  DWORD ?
+RECT ENDS
 
 ; ─── User-defined macros ──────────────────────────────────────────────────────
 ZERO_REG MACRO reg
