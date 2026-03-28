@@ -36,3 +36,8 @@ line-length = 100
 exclude = [
   "src/masma/infrastructure/antlr/generated/masm",
 ]
+
+[dependency-groups]
+dev = [
+    "playwright>=1.58.0",
+]
