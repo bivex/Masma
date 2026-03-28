@@ -10,7 +10,7 @@ from masma.domain.ports import SourceRepository
 
 
 class FileSystemSourceRepository(SourceRepository):
-    _SUPPORTED_SUFFIXES = {".asm", ".inc"}
+    _SUPPORTED_SUFFIXES = {".asm", ".inc", ".mac"}
 
     def load_file(self, path: str) -> SourceUnit:
         source_path = Path(path).expanduser().resolve()
@@ -19,7 +19,7 @@ class FileSystemSourceRepository(SourceRepository):
         if not source_path.is_file():
             raise InputValidationError(f"path is not a file: {source_path}")
         if source_path.suffix.lower() not in self._SUPPORTED_SUFFIXES:
-            raise InputValidationError(f"expected a MASM source file (.asm/.inc), got: {source_path}")
+            raise InputValidationError(f"expected a MASM source file (.asm/.inc/.mac), got: {source_path}")
 
         return self._load_source_unit(source_path)
 
@@ -38,7 +38,7 @@ class FileSystemSourceRepository(SourceRepository):
             )
         )
         if not source_paths:
-            raise InputValidationError(f"no MASM source files found under: {root}")
+            raise InputValidationError(f"no MASM source files (.asm/.inc/.mac) found under: {root}")
 
         return tuple(self._load_source_unit(path) for path in source_paths)
 

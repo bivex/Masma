@@ -58,7 +58,7 @@ def test_nassi_service_builds_directory_bundle_for_masm() -> None:
         BuildNassiDirectoryCommand(root_path=str(ROOT / "tests" / "fixtures"))
     )
 
-    assert bundle.document_count == 4
+    assert bundle.document_count == 5
     assert bundle.root_path == str((ROOT / "tests" / "fixtures").resolve())
     assert any(document.source_location.endswith("control_flow.asm") for document in bundle.documents)
     assert any(document.procedure_count == 2 for document in bundle.documents)
@@ -177,7 +177,7 @@ def test_nassi_dir_cli_writes_html_bundle_for_masm(tmp_path: Path) -> None:
 
     assert result.returncode == 0
     payload = json.loads(result.stdout)
-    assert payload["document_count"] == 4
+    assert payload["document_count"] == 5
     assert payload["index_path"] == str((output_dir / "index.html").resolve())
     assert (output_dir / "control_flow.nassi.html").exists()
     assert (output_dir / "invalid.nassi.html").exists()
@@ -752,10 +752,16 @@ proc_b ENDP
 """.strip(),
     )
     diagram = extractor.extract(source)
-    assert len(diagram.functions) == 2
-    for fn in diagram.functions:
+    # proc_a, proc_b, plus the INIT macro body itself
+    assert len(diagram.functions) == 3
+    proc_fns = [fn for fn in diagram.functions if fn.kind == "proc"]
+    assert len(proc_fns) == 2
+    for fn in proc_fns:
         assert isinstance(fn.steps[0], MacroCallFlowStep)
         assert fn.steps[0].target == "INIT"
+    macro_fns = [fn for fn in diagram.functions if fn.kind == "macro"]
+    assert len(macro_fns) == 1
+    assert macro_fns[0].name == "INIT"
 
 
 # ── IFDEF / assembly-time conditional block tests ─────────────────────────────

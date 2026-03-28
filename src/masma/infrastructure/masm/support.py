@@ -75,6 +75,14 @@ class SourceLine:
 
 
 @dataclass(frozen=True, slots=True)
+class MacroBlock:
+    name: str
+    signature: str
+    line: int
+    body_lines: tuple[SourceLine, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class ProcedureBlock:
     name: str
     signature: str
@@ -306,6 +314,52 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
             ))
 
     return tuple(structs)
+
+
+def scan_macro_blocks(lines: tuple[SourceLine, ...]) -> tuple[MacroBlock, ...]:
+    """Return top-level MACRO/ENDM blocks (non-nested only)."""
+    macros: list[MacroBlock] = []
+    current_name: str | None = None
+    current_signature = ""
+    current_line = 0
+    body: list[SourceLine] = []
+    depth = 0  # track nested MACRO/ENDM pairs inside a body
+
+    for line in lines:
+        if current_name is None:
+            macro_match = MACRO_RE.match(line.text)
+            if macro_match is None:
+                continue
+            current_name = macro_match.group("name")
+            current_signature = compact_text(line.text, limit=140)
+            current_line = line.number
+            body = []
+            depth = 0
+            continue
+
+        if MACRO_RE.match(line.text):
+            depth += 1
+            body.append(line)
+            continue
+
+        if ENDM_RE.match(line.text):
+            if depth > 0:
+                depth -= 1
+                body.append(line)
+                continue
+            macros.append(MacroBlock(
+                name=current_name,
+                signature=current_signature,
+                line=current_line,
+                body_lines=tuple(body),
+            ))
+            current_name = None
+            body = []
+            continue
+
+        body.append(line)
+
+    return tuple(macros)
 
 
 def is_data_directive(line: SourceLine) -> bool:

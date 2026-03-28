@@ -227,6 +227,32 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         color: var(--text-bright);
         line-height: 1.3;
       }}
+      .function-panel.is-macro {{
+        border-color: var(--purple-dim);
+      }}
+      .function-panel.is-macro .function-head {{
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+          var(--purple-dim);
+        border-bottom-color: rgba(196, 167, 255, 0.3);
+      }}
+      .function-panel.is-macro .function-title {{
+        color: var(--purple);
+      }}
+      .macro-badge {{
+        display: inline-block;
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--purple);
+        background: rgba(196, 167, 255, 0.15);
+        border: 1px solid rgba(196, 167, 255, 0.35);
+        border-radius: 999px;
+        padding: 1px 7px;
+        margin-right: 7px;
+        vertical-align: middle;
+      }}
       .function-signature {{
         margin-top: 5px;
         font-family: var(--mono);
@@ -712,10 +738,13 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         )
 
     def _render_function(self, function) -> str:
+        is_macro = getattr(function, "kind", "proc") == "macro"
+        panel_class = "function-panel is-macro" if is_macro else "function-panel"
+        badge = '<span class="macro-badge">▷ macro</span>' if is_macro else ""
         return (
-            '<section class="function-panel">'
+            f'<section class="{panel_class}">'
             '<div class="function-head">'
-            f'<h2 class="function-title">{escape(function.qualified_name)}</h2>'
+            f'<h2 class="function-title">{badge}{escape(function.qualified_name)}</h2>'
             f'<div class="function-signature">{escape(function.signature)}</div>'
             "</div>"
             '<div class="function-body">'

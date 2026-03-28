@@ -117,6 +117,7 @@ class FunctionControlFlow:
     signature: str
     container: str | None
     steps: tuple[ControlFlowStep, ...]
+    kind: str = "proc"  # "proc" | "macro"
 
     @property
     def qualified_name(self) -> str:

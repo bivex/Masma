@@ -42,6 +42,7 @@ from masma.infrastructure.masm.support import (
     compact_text,
     extract_file_header,
     iter_source_lines,
+    scan_macro_blocks,
     scan_procedure_blocks,
     scan_struct_blocks,
 )
@@ -112,8 +113,18 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
     def extract(self, source_unit: SourceUnit) -> ControlFlowDiagram:
         lines = iter_source_lines(source_unit.content)
         procedures = scan_procedure_blocks(lines)
+        macro_blocks = scan_macro_blocks(lines)
         macro_names = _scan_macro_names(lines)
-        functions = tuple(_extract_procedure(procedure, macro_names=macro_names) for procedure in procedures)
+        proc_flows = tuple(
+            _extract_procedure(procedure, macro_names=macro_names)
+            for procedure in procedures
+        )
+        macro_flows = tuple(
+            _extract_macro(macro, macro_names=macro_names)
+            for macro in macro_blocks
+        )
+        # procs first, then macros — keeps "code" before "helpers"
+        functions = proc_flows + macro_flows
         return ControlFlowDiagram(
             source_location=source_unit.location,
             functions=functions,
@@ -137,6 +148,26 @@ def _extract_procedure(procedure, *, macro_names: frozenset[str] = frozenset()) 
         signature=procedure.signature,
         container=None,
         steps=steps,
+        kind="proc",
+    )
+
+
+def _extract_macro(macro, *, macro_names: frozenset[str] = frozenset()) -> FunctionControlFlow:
+    label_positions = _build_label_positions(macro.body_lines)
+    steps, _ = _parse_sequence(
+        macro.body_lines,
+        0,
+        label_positions=label_positions,
+        stop_tokens=frozenset(),
+        end_index=len(macro.body_lines),
+        macro_names=macro_names,
+    )
+    return FunctionControlFlow(
+        name=macro.name,
+        signature=macro.signature,
+        container=None,
+        steps=steps,
+        kind="macro",
     )
 
 
