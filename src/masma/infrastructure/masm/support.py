@@ -25,6 +25,10 @@ COND_ASSEMBLE_RE = re.compile(
     r"^(?:ifdef|ifndef|ifdif|ifdifi|ifidn|ifidni|ifb|ifnb|if)\b",
     re.IGNORECASE,
 )
+COND_ASSEMBLE_PARSE_RE = re.compile(
+    r"^(?P<kind>ifdef|ifndef|ifdif|ifdifi|ifidn|ifidni|ifb|ifnb|if)\s*(?P<condition>.*)$",
+    re.IGNORECASE,
+)
 ENDIF_BARE_RE = re.compile(r"^endif\b", re.IGNORECASE)
 LABEL_RE = re.compile(rf"^(?P<name>{_NAME}):$", re.IGNORECASE)
 SEGMENT_RE = re.compile(

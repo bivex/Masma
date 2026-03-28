@@ -10,6 +10,7 @@ from masma.domain.control_flow import (
     ControlFlowDiagram,
     ForInFlowStep,
     IfFlowStep,
+    IfdefFlowStep,
     FunctionControlFlow,
     InvokeFlowStep,
     MacroCallFlowStep,
@@ -23,6 +24,7 @@ from masma.domain.model import SourceUnit
 from masma.domain.ports import ControlFlowExtractor
 from masma.infrastructure.masm.support import (
     COND_ASSEMBLE_RE,
+    COND_ASSEMBLE_PARSE_RE,
     ELSEIF_RE,
     ELSE_RE,
     ENDIF_BARE_RE,
@@ -154,7 +156,14 @@ def _parse_sequence(
             continue
 
         if COND_ASSEMBLE_RE.match(line.text):
-            index = _skip_cond_assemble_block(lines, index, end_index)
+            step, index = _parse_cond_assemble_block(
+                lines,
+                index,
+                label_positions=label_positions,
+                end_index=end_index,
+                macro_names=macro_names,
+            )
+            steps.append(step)
             continue
 
         if IF_RE.match(line.text):
@@ -395,22 +404,39 @@ def _parse_repeat(lines, index: int, *, label_positions, end_index: int, macro_n
     return RepeatWhileFlowStep(condition=condition, body_steps=body_steps), index
 
 
-def _skip_cond_assemble_block(lines, index: int, end_index: int) -> int:
-    """Skip from an assembly-time IFDEF/IFNDEF/IF to its matching ENDIF.
+def _parse_cond_assemble_block(
+    lines,
+    index: int,
+    *,
+    label_positions: dict[str, int],
+    end_index: int,
+    macro_names: frozenset[str] = frozenset(),
+) -> tuple["IfdefFlowStep", int]:
+    """Parse an assembly-time IFDEF/IFNDEF/IF block into an IfdefFlowStep.
 
-    Tracks nesting depth so inner IFDEF blocks are handled correctly.
-    Returns the index of the line after the closing ENDIF.
+    Handles nesting: inner IFDEF blocks are parsed recursively.
+    Returns (IfdefFlowStep, next_index).
     """
-    depth = 1
+    m = COND_ASSEMBLE_PARSE_RE.match(lines[index].text)
+    assert m is not None
+    kind = m.group("kind").upper()
+    condition = m.group("condition").strip()
     index += 1
-    while index < end_index and depth > 0:
-        text = lines[index].text
-        if COND_ASSEMBLE_RE.match(text):
-            depth += 1
-        elif ENDIF_BARE_RE.match(text):
-            depth -= 1
+
+    body_steps, index = _parse_sequence(
+        lines,
+        index,
+        label_positions=label_positions,
+        stop_tokens=frozenset({"ENDIF_BARE", "ELSE_BARE"}),
+        end_index=end_index,
+        macro_names=macro_names,
+    )
+
+    # consume the ENDIF line
+    if index < end_index and ENDIF_BARE_RE.match(lines[index].text):
         index += 1
-    return index
+
+    return IfdefFlowStep(kind=kind, condition=condition, body_steps=tuple(body_steps)), index
 
 
 def _line_token(text: str) -> str:
@@ -427,6 +453,8 @@ def _line_token(text: str) -> str:
         return "UNTIL"
     if upper.endswith(" ENDP"):
         return "ENDP"
+    if ENDIF_BARE_RE.match(text):
+        return "ENDIF_BARE"
     return ""
 
 

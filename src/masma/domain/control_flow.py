@@ -93,6 +93,14 @@ class MacroCallFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class IfdefFlowStep(ControlFlowStep):
+    """Assembly-time conditional block (IFDEF/IFNDEF/IF without dot)."""
+    kind: str          # "IFDEF", "IFNDEF", "IF", etc. — uppercased
+    condition: str     # the symbol or expression after the directive
+    body_steps: tuple[ControlFlowStep, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class RepeatStringFlowStep(ControlFlowStep):
     prefix: str
     instruction: str

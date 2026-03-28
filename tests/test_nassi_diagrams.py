@@ -759,8 +759,8 @@ proc_b ENDP
 
 # ── IFDEF / assembly-time conditional block tests ─────────────────────────────
 
-def test_ifdef_block_is_fully_skipped() -> None:
-    """IFDEF...ENDIF block — directive line and body both disappear."""
+def test_ifdef_block_produces_ifdef_flow_step() -> None:
+    from masma.domain.control_flow import IfdefFlowStep, MacroCallFlowStep
     extractor = MasmControlFlowExtractor()
     source = SourceUnit(
         identifier=SourceUnitId("ifdef-basic"),
@@ -787,12 +787,27 @@ PE_OpenFile ENDP
     )
     diagram = extractor.extract(source)
     steps = diagram.functions[0].steps
-    labels = [s.label for s in steps]
-    assert labels == ["push ebp", "mov ebp, esp", "sub esp, 40h", "ret"]
+
+    # Two IFDEF blocks + the real instructions
+    assert isinstance(steps[0], IfdefFlowStep)
+    assert steps[0].kind == "IFDEF"
+    assert steps[0].condition == "DEBUG32"
+    assert len(steps[0].body_steps) == 1
+    assert isinstance(steps[0].body_steps[0], MacroCallFlowStep)
+    assert steps[0].body_steps[0].target == "PrintText"
+
+    assert steps[1].label == "push ebp"
+    assert steps[2].label == "mov ebp, esp"
+
+    assert isinstance(steps[3], IfdefFlowStep)
+    assert steps[3].condition == "DEBUG32"
+
+    assert steps[4].label == "sub esp, 40h"
+    assert steps[5].label == "ret"
 
 
-def test_ifndef_block_is_fully_skipped() -> None:
-    """IFNDEF...ENDIF block is also skipped."""
+def test_ifndef_block_produces_ifdef_flow_step() -> None:
+    from masma.domain.control_flow import IfdefFlowStep
     extractor = MasmControlFlowExtractor()
     source = SourceUnit(
         identifier=SourceUnitId("ifndef-basic"),
@@ -809,13 +824,16 @@ fn ENDP
     )
     diagram = extractor.extract(source)
     steps = diagram.functions[0].steps
-    assert len(steps) == 2
-    assert steps[0].label == "mov eax, 1"
-    assert steps[1].label == "ret"
+    assert isinstance(steps[0], IfdefFlowStep)
+    assert steps[0].kind == "IFNDEF"
+    assert steps[0].condition == "RELEASE"
+    assert steps[0].body_steps[0].label == "int 3"
+    assert steps[1].label == "mov eax, 1"
+    assert steps[2].label == "ret"
 
 
 def test_nested_ifdef_blocks_handled_correctly() -> None:
-    """Nested IFDEF inside IFDEF: depth tracking must consume the inner ENDIF too."""
+    from masma.domain.control_flow import IfdefFlowStep
     extractor = MasmControlFlowExtractor()
     source = SourceUnit(
         identifier=SourceUnitId("ifdef-nested"),
@@ -836,14 +854,25 @@ fn ENDP
     )
     diagram = extractor.extract(source)
     steps = diagram.functions[0].steps
-    # Only the instructions outside both IFDEFs survive
-    assert len(steps) == 2
-    assert steps[0].label == "mov edx, 4"
-    assert steps[1].label == "ret"
+
+    # Outer IFDEF block + two real instructions
+    assert isinstance(steps[0], IfdefFlowStep)
+    assert steps[0].kind == "IFDEF"
+    assert steps[0].condition == "OUTER"
+
+    outer_body = steps[0].body_steps
+    assert outer_body[0].label == "mov eax, 1"
+    assert isinstance(outer_body[1], IfdefFlowStep)
+    assert outer_body[1].condition == "INNER"
+    assert outer_body[1].body_steps[0].label == "mov ebx, 2"
+    assert outer_body[2].label == "mov ecx, 3"
+
+    assert steps[1].label == "mov edx, 4"
+    assert steps[2].label == "ret"
 
 
 def test_ifdef_before_and_after_real_flow() -> None:
-    """Debug prints around a .IF block don't corrupt structured flow extraction."""
+    from masma.domain.control_flow import IfdefFlowStep
     extractor = MasmControlFlowExtractor()
     source = SourceUnit(
         identifier=SourceUnitId("ifdef-around-if"),
@@ -866,17 +895,21 @@ fn ENDP
     )
     diagram = extractor.extract(source)
     steps = diagram.functions[0].steps
-    assert len(steps) == 3
-    assert isinstance(steps[0], ActionFlowStep)
-    assert steps[0].label == "mov eax, val"
-    assert isinstance(steps[1], IfFlowStep)
-    assert steps[1].condition == "eax > 0"
-    assert isinstance(steps[2], ActionFlowStep)
-    assert steps[2].label == "ret"
+    assert len(steps) == 5
+    assert isinstance(steps[0], IfdefFlowStep)
+    assert steps[0].condition == "DEBUG32"
+    assert isinstance(steps[1], ActionFlowStep)
+    assert steps[1].label == "mov eax, val"
+    assert isinstance(steps[2], IfFlowStep)
+    assert steps[2].condition == "eax > 0"
+    assert isinstance(steps[3], IfdefFlowStep)
+    assert steps[3].condition == "DEBUG32"
+    assert isinstance(steps[4], ActionFlowStep)
+    assert steps[4].label == "ret"
 
 
-def test_if_bare_conditional_assembly_skipped() -> None:
-    """Bare IF (assembly-time, no dot) is also skipped, not confused with runtime .IF."""
+def test_if_bare_conditional_assembly_produces_ifdef_step() -> None:
+    from masma.domain.control_flow import IfdefFlowStep
     extractor = MasmControlFlowExtractor()
     source = SourceUnit(
         identifier=SourceUnitId("if-bare"),
@@ -893,6 +926,36 @@ fn ENDP
     )
     diagram = extractor.extract(source)
     steps = diagram.functions[0].steps
-    assert len(steps) == 2
-    assert steps[0].label == "inc ebx"
-    assert steps[1].label == "ret"
+    assert isinstance(steps[0], IfdefFlowStep)
+    assert steps[0].kind == "IF"
+    assert steps[0].condition == "@WordSize EQ 4"
+    assert steps[0].body_steps[0].label == "mov eax, 0"
+    assert steps[1].label == "inc ebx"
+    assert steps[2].label == "ret"
+
+
+def test_renderer_renders_ifdef_step() -> None:
+    from masma.domain.control_flow import IfdefFlowStep
+    renderer = HtmlNassiDiagramRenderer()
+    diagram = ControlFlowDiagram(
+        source_location="ifdef.asm",
+        functions=(
+            FunctionControlFlow(
+                name="fn",
+                signature="fn PROC",
+                container=None,
+                steps=(
+                    IfdefFlowStep(
+                        kind="IFDEF",
+                        condition="DEBUG32",
+                        body_steps=(ActionFlowStep(label="int 3"),),
+                    ),
+                    ActionFlowStep(label="ret"),
+                ),
+            ),
+        ),
+    )
+    html = renderer.render(diagram)
+    assert "# IFDEF DEBUG32" in html
+    assert "ns-ifdef" in html
+    assert "int 3" in html

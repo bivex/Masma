@@ -15,6 +15,7 @@ from masma.domain.control_flow import (
     DoCatchFlowStep,
     ForInFlowStep,
     GuardFlowStep,
+    IfdefFlowStep,
     IfFlowStep,
     InvokeFlowStep,
     MacroCallFlowStep,
@@ -309,6 +310,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-ret > .ns-label {{ background: rgba(255, 147, 169, 0.08); }}
       .ns-macro  {{ background: var(--surface-2); border-left: 3px solid var(--purple); }}
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
+      .ns-ifdef {{ border-left: 3px dashed var(--muted); background: var(--surface); }}
+      .ns-ifdef > .ns-header {{ background: var(--surface-3); color: var(--muted); font-style: italic; }}
 
       .ns-guard   > .ns-header {{ background: var(--orange-dim); color: var(--orange); }}
       .ns-switch  > .ns-header,
@@ -684,6 +687,15 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 f'<div class="ns-label" aria-label="Macro {escape(step.target)}">'
                 f'<code class="action-text">{escape(label)}</code>'
                 "</div>"
+                "</div>"
+            )
+        if isinstance(step, IfdefFlowStep):
+            header = f"# {step.kind} {step.condition}".rstrip()
+            body_html = self._render_sequence(step.body_steps, depth=depth + 1)
+            return (
+                '<div class="ns-node ns-ifdef">'
+                f"{self._render_header(header)}"
+                f"{body_html}"
                 "</div>"
             )
         if isinstance(step, RepeatStringFlowStep):
