@@ -608,22 +608,22 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         if isinstance(step, GuardFlowStep):
             return (
                 '<div class="ns-node ns-guard">'
-                f"{self._render_header(f'Guard {step.condition}')}"
+                f"{self._render_header(f'⚑ Guard {step.condition}')}"
                 '<div class="ns-branch ns-branch-no"><div class="ns-branch-title">Failure / exit</div>'
                 f"{self._render_sequence(step.else_steps, depth=depth + 1)}"
                 "</div>"
                 "</div>"
             )
         if isinstance(step, WhileFlowStep):
-            return self._render_single_body(f"While {step.condition}", step.body_steps, depth=depth)
+            return self._render_single_body(f"↻ While {step.condition}", step.body_steps, depth=depth)
         if isinstance(step, ForInFlowStep):
-            return self._render_single_body(f"For {step.header}", step.body_steps, depth=depth)
+            return self._render_single_body(f"∀ For {step.header}", step.body_steps, depth=depth)
         if isinstance(step, RepeatWhileFlowStep):
             return (
                 '<div class="ns-node ns-repeat">'
-                f"{self._render_header('Repeat')}"
+                f"{self._render_header('↺ Repeat')}"
                 f"{self._render_sequence(step.body_steps, depth=depth + 1)}"
-                f"{self._render_footer(f'While {step.condition}')}"
+                f"{self._render_footer(f'↺ While {step.condition}')}"
                 "</div>"
             )
         if isinstance(step, SwitchFlowStep):
@@ -649,7 +649,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
             return self._render_single_body("Defer", step.body_steps, depth=depth, css_class="ns-defer")
         if isinstance(step, InvokeFlowStep):
             args_text = ", ".join(step.args) if step.args else ""
-            label = f"INVOKE {step.target}" + (f"  {args_text}" if args_text else "")
+            label = f"⇒ INVOKE {step.target}" + (f"  {args_text}" if args_text else "")
             return (
                 '<div class="ns-node ns-invoke">'
                 f'<div class="ns-label" aria-label="Invoke {escape(step.target)}">'
@@ -658,7 +658,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 "</div>"
             )
         if isinstance(step, RepeatStringFlowStep):
-            label = f"{step.prefix.upper()} {step.instruction.lower()}"
+            label = f"⊛ {step.prefix.upper()} {step.instruction.lower()}"
             return (
                 '<div class="ns-node ns-repeat">'
                 f'<div class="ns-header" aria-label="{escape(label)}">{escape(label)}</div>'
@@ -756,7 +756,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         if case_count == 0:
             return (
                 '<div class="ns-node ns-switch">'
-                f"{self._render_header(f'Switch {step.expression}')}"
+                f"{self._render_header(f'⎇ Switch {step.expression}')}"
                 '<div class="empty">No cases.</div>'
                 "</div>"
             )
@@ -777,7 +777,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
 
         return (
             f'<div class="ns-node ns-switch ns-if-depth-{d}">'
-            f'<div class="ns-switch-header">{badge} switch {escape(step.expression)}</div>'
+            f'<div class="ns-switch-header">{badge} ⎇ switch {escape(step.expression)}</div>'
             f'<div class="ns-switch-cases">{"".join(cases_html)}</div>'
             "</div>"
         )
