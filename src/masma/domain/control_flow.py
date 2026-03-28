@@ -153,16 +153,22 @@ class StructDefinition:
 
 
 @dataclass(frozen=True, slots=True)
+class FileDecl:
+    name: str
+    detail: str = ""
+
+
+@dataclass(frozen=True, slots=True)
 class ControlFlowDiagram:
     source_location: str
     functions: tuple[FunctionControlFlow, ...]
     file_header: str | None = None
     structs: tuple[StructDefinition, ...] = ()
     entry_point: str | None = None
-    includes: tuple[str, ...] = ()
-    externals: tuple[str, ...] = ()
-    publics: tuple[str, ...] = ()
-    segments: tuple[str, ...] = ()
-    constants: tuple[str, ...] = ()
-    variables: tuple[str, ...] = ()
+    includes: tuple[FileDecl, ...] = ()
+    externals: tuple[FileDecl, ...] = ()
+    publics: tuple[FileDecl, ...] = ()
+    segments: tuple[FileDecl, ...] = ()
+    constants: tuple[FileDecl, ...] = ()
+    variables: tuple[FileDecl, ...] = ()
 

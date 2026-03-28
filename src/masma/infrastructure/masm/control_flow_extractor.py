@@ -9,6 +9,7 @@ from masma.domain.control_flow import (
     AlignFlowStep,
     CallFlowStep,
     ControlFlowDiagram,
+    FileDecl,
     ForInFlowStep,
     IfFlowStep,
     IfdefFlowStep,
@@ -22,6 +23,7 @@ from masma.domain.control_flow import (
     SwitchFlowStep,
     WhileFlowStep,
 )
+from masma.domain.control_flow import FileDecl
 from masma.domain.model import SourceUnit
 from masma.domain.ports import ControlFlowExtractor
 from masma.infrastructure.masm.support import (
@@ -128,33 +130,33 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
         macro_names = _scan_macro_names(lines)
 
         # Collect top-level declarations info
-        includes: list[str] = []
-        externals: list[str] = []
-        publics: list[str] = []
-        segments: list[str] = []
-        constants: list[str] = []
-        variables: list[str] = []
+        includes: list[FileDecl] = []
+        externals: list[FileDecl] = []
+        publics: list[FileDecl] = []
+        segments: list[FileDecl] = []
+        constants: list[FileDecl] = []
+        variables: list[FileDecl] = []
 
         for line in lines:
             if m := INCLUDE_RE.match(line.text):
-                includes.append(m.group("target").strip())
+                includes.append(FileDecl(name=m.group("target").strip(), detail=line.text.strip()))
             elif m := EXTERN_RE.match(line.text):
-                externals.append(m.group("name").strip())
+                externals.append(FileDecl(name=m.group("name").strip(), detail=line.text.strip()))
             elif m := PUBLIC_RE.match(line.text):
                 for name in (n.strip() for n in m.group("names").split(",")):
                     if name:
-                        publics.append(name)
+                        publics.append(FileDecl(name=name, detail=line.text.strip()))
             elif m := EQU_RE.match(line.text):
-                constants.append(m.group("name").strip())
+                constants.append(FileDecl(name=m.group("name").strip(), detail=line.text.strip()))
             elif m := VARIABLE_RE.match(line.text):
-                variables.append(m.group("name").strip())
+                variables.append(FileDecl(name=m.group("name").strip(), detail=line.text.strip()))
 
             seg_match = SEGMENT_RE.match(line.text)
             if seg_match:
                 if seg_match.group("name"):
-                    segments.append(seg_match.group("name"))
+                    segments.append(FileDecl(name=seg_match.group("name"), detail=line.text.strip()))
                 elif seg_match.group("directive"):
-                    segments.append(seg_match.group("directive"))
+                    segments.append(FileDecl(name=seg_match.group("directive"), detail=line.text.strip()))
 
         proc_flows = tuple(
             _extract_procedure(procedure, macro_names=macro_names)
@@ -172,13 +174,22 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
             file_header=extract_file_header(lines),
             structs=scan_struct_blocks(lines),
             entry_point=extract_entry_point(lines),
-            includes=tuple(dict.fromkeys(sorted(set(includes)))),
-            externals=tuple(dict.fromkeys(sorted(set(externals)))),
-            publics=tuple(dict.fromkeys(sorted(set(publics)))),
-            segments=tuple(dict.fromkeys(sorted(set(segments)))),
-            constants=tuple(dict.fromkeys(sorted(set(constants)))),
-            variables=tuple(dict.fromkeys(sorted(set(variables)))),
+            includes=_dedup_decls(includes),
+            externals=_dedup_decls(externals),
+            publics=_dedup_decls(publics),
+            segments=_dedup_decls(segments),
+            constants=_dedup_decls(constants),
+            variables=_dedup_decls(variables),
         )
+
+
+def _dedup_decls(decls: list[FileDecl]) -> tuple[FileDecl, ...]:
+    """Deduplicate by name, keep first occurrence's detail, sort by name."""
+    seen: dict[str, FileDecl] = {}
+    for d in decls:
+        if d.name not in seen:
+            seen[d.name] = d
+    return tuple(sorted(seen.values(), key=lambda d: d.name))
 
 
 def _extract_procedure(procedure, *, macro_names: frozenset[str] = frozenset()) -> FunctionControlFlow:

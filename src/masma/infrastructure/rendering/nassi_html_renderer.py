@@ -857,11 +857,11 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
     def _render_file_overview(self, diagram: ControlFlowDiagram) -> str:
         cards: list[str] = []
 
-        def _tag_list(items: tuple[str, ...], css_class: str) -> str:
+        def _tag_list(items: tuple, css_class: str) -> str:
             if not items:
                 return ""
             tags = "".join(
-                f'<span class="overview-tag">{escape(t)}</span>'
+                f'<span class="overview-tag" title="{escape(getattr(t, "detail", "") or t.name)}">{escape(t.name)}</span>'
                 for t in items
             )
             return f'<div class="overview-card-list">{tags}</div>'
