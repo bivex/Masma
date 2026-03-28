@@ -28,6 +28,8 @@ from masma.infrastructure.masm.support import (
     ALIGN_RE,
     COND_ASSEMBLE_RE,
     COND_ASSEMBLE_PARSE_RE,
+    ELSE_BARE_RE,
+    ELSEIF_BARE_RE,
     ELSEIF_RE,
     ELSE_RE,
     ENDIF_BARE_RE,
@@ -466,9 +468,8 @@ def _parse_cond_assemble_block(
     end_index: int,
     macro_names: frozenset[str] = frozenset(),
 ) -> tuple["IfdefFlowStep", int]:
-    """Parse an assembly-time IFDEF/IFNDEF/IF block into an IfdefFlowStep.
+    """Parse an assembly-time IFDEF/IFNDEF/IF ... [ELSEIF ...] [ELSE] ENDIF block.
 
-    Handles nesting: inner IFDEF blocks are parsed recursively.
     Returns (IfdefFlowStep, next_index).
     """
     m = COND_ASSEMBLE_PARSE_RE.match(lines[index].text)
@@ -477,20 +478,71 @@ def _parse_cond_assemble_block(
     condition = m.group("condition").strip()
     index += 1
 
+    # Collect branches: list of (kind, condition, steps)
+    branches: list[tuple[str, str, tuple]] = []
+    else_steps: tuple = ()
+
+    # First branch body
     body_steps, index = _parse_sequence(
         lines,
         index,
         label_positions=label_positions,
-        stop_tokens=frozenset({"ENDIF_BARE", "ELSE_BARE"}),
+        stop_tokens=frozenset({"ENDIF_BARE", "ELSE_BARE", "ELSEIF_BARE"}),
         end_index=end_index,
         macro_names=macro_names,
     )
+    branches.append((kind, condition, tuple(body_steps)))
 
-    # consume the ENDIF line
-    if index < end_index and ENDIF_BARE_RE.match(lines[index].text):
-        index += 1
+    # Consume ELSEIF / ELSE / ENDIF
+    while index < end_index:
+        line = lines[index]
+        if ELSEIF_BARE_RE.match(line.text):
+            elif_m = ELSEIF_BARE_RE.match(line.text)
+            elif_cond = elif_m.group(1).strip()
+            index += 1
+            branch_steps, index = _parse_sequence(
+                lines,
+                index,
+                label_positions=label_positions,
+                stop_tokens=frozenset({"ENDIF_BARE", "ELSE_BARE", "ELSEIF_BARE"}),
+                end_index=end_index,
+                macro_names=macro_names,
+            )
+            branches.append(("ELSEIF", elif_cond, tuple(branch_steps)))
+            continue
 
-    return IfdefFlowStep(kind=kind, condition=condition, body_steps=tuple(body_steps)), index
+        if ELSE_BARE_RE.match(line.text):
+            index += 1
+            else_body, index = _parse_sequence(
+                lines,
+                index,
+                label_positions=label_positions,
+                stop_tokens=frozenset({"ENDIF_BARE"}),
+                end_index=end_index,
+                macro_names=macro_names,
+            )
+            else_steps = tuple(else_body)
+            continue
+
+        if ENDIF_BARE_RE.match(line.text):
+            index += 1
+            break
+
+        # Shouldn't happen — but stop if unknown token
+        break
+
+    # Flatten: primary branch stored in body_steps (backward compat),
+    # additional ELSEIF branches and ELSE in new fields.
+    primary = branches[0]
+    rest = branches[1:] if len(branches) > 1 else ()
+
+    return IfdefFlowStep(
+        kind=primary[0],
+        condition=primary[1],
+        body_steps=primary[2],
+        branches=tuple(rest),
+        else_steps=else_steps,
+    ), index
 
 
 def _line_token(text: str) -> str:
@@ -509,6 +561,10 @@ def _line_token(text: str) -> str:
         return "ENDP"
     if ENDIF_BARE_RE.match(text):
         return "ENDIF_BARE"
+    if ELSE_BARE_RE.match(text):
+        return "ELSE_BARE"
+    if ELSEIF_BARE_RE.match(text):
+        return "ELSEIF_BARE"
     return ""
 
 

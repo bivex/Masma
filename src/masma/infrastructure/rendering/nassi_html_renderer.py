@@ -351,6 +351,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
       .ns-ifdef {{ border-left: 3px dashed var(--muted); background: var(--surface); }}
       .ns-ifdef > .ns-header {{ background: var(--surface-3); color: var(--muted); font-style: italic; }}
+      .ns-ifdef-branch {{ border-top: 1px dashed var(--border-soft); }}
+      .ns-ifdef-branch > .ns-header {{ background: rgba(142, 155, 187, 0.06); color: var(--muted); font-style: italic; }}
       .ns-align-marker {{
         display: flex;
         align-items: center;
@@ -946,10 +948,31 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         if isinstance(step, IfdefFlowStep):
             header = f"# {step.kind} {step.condition}".rstrip()
             body_html = self._render_sequence(step.body_steps, depth=depth + 1)
+            # ELSEIF branches
+            elseif_html = ""
+            for elif_kind, elif_cond, elif_steps in step.branches:
+                elif_header = f"# ELSEIF {elif_cond}".rstrip()
+                elseif_html += (
+                    f'<div class="ns-ifdef-branch">'
+                    f"{self._render_header(elif_header)}"
+                    f"{self._render_sequence(elif_steps, depth=depth + 1)}"
+                    "</div>"
+                )
+            # ELSE branch
+            else_html = ""
+            if step.else_steps:
+                else_html = (
+                    f'<div class="ns-ifdef-branch">'
+                    f"{self._render_header('# ELSE')}"
+                    f"{self._render_sequence(step.else_steps, depth=depth + 1)}"
+                    "</div>"
+                )
             return (
                 '<div class="ns-node ns-ifdef">'
                 f"{self._render_header(header)}"
                 f"{body_html}"
+                f"{elseif_html}"
+                f"{else_html}"
                 "</div>"
             )
         if isinstance(step, AlignFlowStep):

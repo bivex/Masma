@@ -99,10 +99,17 @@ class MacroCallFlowStep(ControlFlowStep):
 
 @dataclass(frozen=True, slots=True)
 class IfdefFlowStep(ControlFlowStep):
-    """Assembly-time conditional block (IFDEF/IFNDEF/IF without dot)."""
+    """Assembly-time conditional block (IFDEF/IFNDEF/IF without dot).
+
+    branches: tuple of (kind, condition, body_steps) — first branch is the
+              opening directive, subsequent ones are ELSEIF branches.
+    else_steps: steps under the ELSE branch (empty if no ELSE).
+    """
     kind: str          # "IFDEF", "IFNDEF", "IF", etc. — uppercased
     condition: str     # the symbol or expression after the directive
     body_steps: tuple[ControlFlowStep, ...]
+    branches: tuple[tuple[str, str, tuple[ControlFlowStep, ...]], ...] = ()
+    else_steps: tuple[ControlFlowStep, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
