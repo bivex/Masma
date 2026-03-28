@@ -89,7 +89,7 @@ Masma currently understands these structural and flow-level MASM constructs:
 
 ### Control flow step types
 
-The domain and renderer define the following step types. Six are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
+The domain and renderer define the following step types. Eight are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
 
 | Step type | Status | Notes |
 |---|---|---|
@@ -99,6 +99,8 @@ The domain and renderer define the following step types. Six are fully produced 
 | `RepeatWhileFlowStep` | implemented | `.REPEAT/.UNTIL` / `.REPEAT/.UNTILCXZ` |
 | `SwitchFlowStep` / `SwitchCaseFlow` | implemented | 2+ `cmp reg, val` + `je label` chains with same register |
 | `ForInFlowStep` | implemented | MASM `loop` instruction (decrements ECX, jumps if non-zero) |
+| `InvokeFlowStep` | implemented | MASM `INVOKE proc, args` macro call |
+| `RepeatStringFlowStep` | implemented | `REP`/`REPE`/`REPNE` string instructions (`rep movsd`, `rep stosb`, etc.) |
 | `GuardFlowStep` | not applicable | early-exit guard has no clean linear mapping in MASM |
 | `DoCatchFlowStep` / `CatchClauseFlow` | not applicable | structured exception handling has no natural MASM directive equivalent |
 | `DeferFlowStep` | not applicable | deferred cleanup has no natural MASM directive equivalent |
