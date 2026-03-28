@@ -83,8 +83,9 @@ def test_control_flow_extractor_maps_structured_masm_blocks() -> None:
     assert any(
         isinstance(step, WhileFlowStep) for step in score.steps[1].else_steps[0].else_steps
     )
-    assert isinstance(normalize.steps[0], ActionFlowStep)
-    assert normalize.steps[0].label == "start_loop:"
+    from masma.domain.control_flow import LabelFlowStep
+    assert isinstance(normalize.steps[0], LabelFlowStep)
+    assert normalize.steps[0].name == "start_loop"
 
 
 def test_control_flow_extractor_reconstructs_jump_based_if_else_and_loop() -> None:
@@ -959,3 +960,175 @@ def test_renderer_renders_ifdef_step() -> None:
     assert "# IFDEF DEBUG32" in html
     assert "ns-ifdef" in html
     assert "int 3" in html
+
+
+# ── LabelFlowStep ──────────────────────────────────────────────────────────
+
+def test_standalone_label_produces_label_flow_step() -> None:
+    """A label not referenced by any jump emits LabelFlowStep."""
+    from masma.domain.control_flow import LabelFlowStep
+
+    # section_a: is never the target of a jump — jump-loop recovery will NOT
+    # absorb it, so it must become a LabelFlowStep.
+    source = textwrap.dedent("""\
+        myProc PROC
+            mov eax, 0
+        section_a:
+            mov ebx, 1
+            ret
+        myProc ENDP
+    """)
+    extractor = MasmControlFlowExtractor()
+    unit = SourceUnit(identifier=SourceUnitId("label_test.asm"), location="label_test.asm", content=source)
+    diagram = extractor.extract(unit)
+    steps = diagram.functions[0].steps
+    assert any(isinstance(s, LabelFlowStep) for s in _flatten_steps(steps))
+
+
+def test_non_loop_label_produces_label_flow_step() -> None:
+    """A label that is not the target of any jump emits LabelFlowStep."""
+    from masma.domain.control_flow import LabelFlowStep
+
+    source = textwrap.dedent("""\
+        myProc PROC
+            mov eax, 1
+        section_a:
+            mov ebx, 2
+            ret
+        myProc ENDP
+    """)
+    extractor = MasmControlFlowExtractor()
+    unit = SourceUnit(identifier=SourceUnitId("label_flat.asm"), location="label_flat.asm", content=source)
+    diagram = extractor.extract(unit)
+    steps = diagram.functions[0].steps
+    label_steps = [s for s in steps if isinstance(s, LabelFlowStep)]
+    assert len(label_steps) == 1
+    assert label_steps[0].name.lower() == "section_a"
+
+
+def test_renderer_renders_label_marker() -> None:
+    """LabelFlowStep renders as a visible marker band with the label name."""
+    from masma.domain.control_flow import LabelFlowStep
+
+    renderer = HtmlNassiDiagramRenderer()
+    diagram = ControlFlowDiagram(
+        source_location="lbl.asm",
+        functions=(
+            FunctionControlFlow(
+                name="fn",
+                signature="fn PROC",
+                container=None,
+                steps=(
+                    ActionFlowStep(label="mov eax, 0"),
+                    LabelFlowStep(name="error_handler"),
+                    ActionFlowStep(label="ret"),
+                ),
+            ),
+        ),
+    )
+    html = renderer.render(diagram)
+    assert "ns-label-marker" in html
+    assert "error_handler:" in html
+
+
+# ── file_header extraction ────────────────────────────────────────────────
+
+def test_file_header_extracted_from_leading_comments() -> None:
+    """Leading semicolon comment block is extracted as file_header."""
+    source = textwrap.dedent("""\
+        ; MyLib — helper routines
+        ; Author: Test
+        ; Version: 1.0
+
+        .code
+        foo PROC
+            ret
+        foo ENDP
+    """)
+    extractor = MasmControlFlowExtractor()
+    unit = SourceUnit(identifier=SourceUnitId("hdr.asm"), location="hdr.asm", content=source)
+    diagram = extractor.extract(unit)
+    assert diagram.file_header is not None
+    assert "MyLib" in diagram.file_header
+    assert "Author" in diagram.file_header
+
+
+def test_file_header_none_when_no_leading_comment() -> None:
+    """Files that start with code (no leading comment) have file_header=None."""
+    source = textwrap.dedent("""\
+        .code
+        foo PROC
+            ret
+        foo ENDP
+    """)
+    extractor = MasmControlFlowExtractor()
+    unit = SourceUnit(identifier=SourceUnitId("noheader.asm"), location="noheader.asm", content=source)
+    diagram = extractor.extract(unit)
+    assert diagram.file_header is None
+
+
+def test_renderer_shows_file_header_block() -> None:
+    """file_header content appears in rendered HTML above the procedure sections."""
+    renderer = HtmlNassiDiagramRenderer()
+    diagram = ControlFlowDiagram(
+        source_location="hdr.asm",
+        functions=(
+            FunctionControlFlow(
+                name="fn",
+                signature="fn PROC",
+                container=None,
+                steps=(ActionFlowStep(label="ret"),),
+            ),
+        ),
+        file_header="MyLib — helper routines\nAuthor: Test",
+    )
+    html = renderer.render(diagram)
+    assert '<div class="file-header-block">' in html
+    assert "MyLib" in html
+    assert "Author: Test" in html
+
+
+def test_renderer_no_file_header_block_when_none() -> None:
+    """No file-header-block element is rendered when file_header is None."""
+    renderer = HtmlNassiDiagramRenderer()
+    diagram = ControlFlowDiagram(
+        source_location="noheader.asm",
+        functions=(
+            FunctionControlFlow(
+                name="fn",
+                signature="fn PROC",
+                container=None,
+                steps=(ActionFlowStep(label="ret"),),
+            ),
+        ),
+        file_header=None,
+    )
+    html = renderer.render(diagram)
+    assert '<div class="file-header-block">' not in html
+
+
+# ── helpers ───────────────────────────────────────────────────────────────
+
+import textwrap
+
+
+def _flatten_steps(steps):
+    """Recursively yield all steps from a nested structure."""
+    from masma.domain.control_flow import (
+        IfFlowStep, WhileFlowStep, ForInFlowStep, RepeatWhileFlowStep,
+        SwitchFlowStep, IfdefFlowStep,
+    )
+    for step in steps:
+        yield step
+        if isinstance(step, IfFlowStep):
+            yield from _flatten_steps(step.then_steps)
+            yield from _flatten_steps(step.else_steps)
+        elif isinstance(step, (WhileFlowStep, ForInFlowStep)):
+            yield from _flatten_steps(step.body_steps)
+        elif isinstance(step, RepeatWhileFlowStep):
+            yield from _flatten_steps(step.body_steps)
+        elif isinstance(step, SwitchFlowStep):
+            for case in step.cases:
+                yield from _flatten_steps(case.steps)
+        elif isinstance(step, IfdefFlowStep):
+            yield from _flatten_steps(step.body_steps)

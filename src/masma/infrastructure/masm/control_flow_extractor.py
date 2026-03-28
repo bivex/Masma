@@ -13,6 +13,7 @@ from masma.domain.control_flow import (
     IfdefFlowStep,
     FunctionControlFlow,
     InvokeFlowStep,
+    LabelFlowStep,
     MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
@@ -39,6 +40,7 @@ from masma.infrastructure.masm.support import (
     UNTIL_RE,
     WHILE_RE,
     compact_text,
+    extract_file_header,
     iter_source_lines,
     scan_procedure_blocks,
 )
@@ -114,6 +116,7 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
         return ControlFlowDiagram(
             source_location=source_unit.location,
             functions=functions,
+            file_header=extract_file_header(lines),
         )
 
 
@@ -295,6 +298,12 @@ def _parse_sequence(
                 steps.append(MacroCallFlowStep(target=target, args=args))
                 index += 1
                 continue
+
+        label_match = LABEL_RE.match(line.text)
+        if label_match is not None:
+            steps.append(LabelFlowStep(name=label_match.group("name")))
+            index += 1
+            continue
 
         steps.append(ActionFlowStep(label=compact_text(line.text)))
         index += 1

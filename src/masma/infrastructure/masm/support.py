@@ -82,6 +82,26 @@ class ProcedureBlock:
     body_lines: tuple[SourceLine, ...]
 
 
+def extract_file_header(lines: tuple[SourceLine, ...]) -> str | None:
+    """Return the leading comment block (consecutive ';' lines) as a single string.
+
+    Blank lines at the top are skipped.  The first non-comment, non-blank line
+    stops collection.  Returns *None* when there is no leading comment block.
+    """
+    comment_lines: list[str] = []
+    for line in lines:
+        stripped = line.raw.strip()
+        if not stripped:
+            if comment_lines:
+                break
+            continue
+        if stripped.startswith(";"):
+            comment_lines.append(stripped.lstrip(";").strip())
+        else:
+            break
+    return "\n".join(comment_lines) if comment_lines else None
+
+
 def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
     lines: list[SourceLine] = []
     for number, raw_line in enumerate(source_text.splitlines(), start=1):

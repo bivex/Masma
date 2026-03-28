@@ -18,6 +18,7 @@ from masma.domain.control_flow import (
     IfdefFlowStep,
     IfFlowStep,
     InvokeFlowStep,
+    LabelFlowStep,
     MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
@@ -51,6 +52,11 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         sections = "".join(self._render_function(function) for function in diagram.functions)
         if not sections:
             sections = '<section class="function-panel"><p class="empty-file">No procedures found.</p></section>'
+        if diagram.file_header:
+            header_block = (
+                f'<div class="file-header-block">{escape(diagram.file_header)}</div>'
+            )
+            sections = header_block + sections
 
         return f"""<!DOCTYPE html>
 <html lang="en">
@@ -312,6 +318,50 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
       .ns-ifdef {{ border-left: 3px dashed var(--muted); background: var(--surface); }}
       .ns-ifdef > .ns-header {{ background: var(--surface-3); color: var(--muted); font-style: italic; }}
+      .ns-label-marker {{
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px;
+        background: var(--surface-3);
+        border-top: 1px solid var(--border-soft);
+        border-bottom: 1px solid var(--border-soft);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }}
+      .ns-label-marker::before {{
+        content: "";
+        display: block;
+        width: 32px;
+        height: 1px;
+        background: var(--border-strong);
+        flex-shrink: 0;
+      }}
+      .ns-label-marker::after {{
+        content: "";
+        display: block;
+        flex: 1;
+        height: 1px;
+        background: var(--border-strong);
+      }}
+      .file-header-block {{
+        margin: 0 0 12px 0;
+        padding: 10px 16px;
+        background: var(--surface-3);
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        border-left: 3px solid var(--muted);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.65;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }}
 
       .ns-guard   > .ns-header {{ background: var(--orange-dim); color: var(--orange); }}
       .ns-switch  > .ns-header,
@@ -696,6 +746,12 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 '<div class="ns-node ns-ifdef">'
                 f"{self._render_header(header)}"
                 f"{body_html}"
+                "</div>"
+            )
+        if isinstance(step, LabelFlowStep):
+            return (
+                f'<div class="ns-label-marker" aria-label="Label {escape(step.name)}">'
+                f"{escape(step.name)}:"
                 "</div>"
             )
         if isinstance(step, RepeatStringFlowStep):

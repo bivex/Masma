@@ -11,6 +11,8 @@ Today the system supports:
 * extracting a stable structural model with includes, constants, variables, segments, structs, macros, procedures, and labels
 * reporting syntax diagnostics for unbalanced `PROC/ENDP`, `STRUCT/ENDS`, `MACRO/ENDM`, and structured flow directives
 * extracting structured control flow from MASM procedures that use `.IF/.ELSEIF/.ELSE/.ENDIF`, `.WHILE/.ENDW`, `.REPEAT/.UNTIL`, recovered `cmp/je` switch chains, and MASM `loop`-counted loops
+* extracting the leading comment header block from a source file and showing it in the diagram
+* rendering standalone MASM labels (`name:`) as visual separator markers inside procedure diagrams
 * generating HTML Nassi-Shneiderman diagrams for one MASM file or for a directory bundle
 
 ## Architecture
@@ -82,10 +84,12 @@ Masma currently understands these structural and flow-level MASM constructs:
 * `STRUCT/ENDS`
 * `MACRO/ENDM`
 * `PROC/ENDP`
-* labels
+* standalone labels (`name:`) rendered as visual separator markers
+* leading comment header block extracted and shown at the top of the diagram
 * `.IF/.ELSEIF/.ELSE/.ENDIF`
 * `.WHILE/.ENDW`
 * `.REPEAT/.UNTIL` and `.REPEAT/.UNTILCXZ`
+* assembly-time conditionals: `IFDEF`/`IFNDEF`/`IF`/`IFNDEF`/`IFDIF`/`IFIDN`/`IFB`/`IFNB` … `ENDIF`
 * heuristic recovery of common jump-based flow:
   `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, label-based `jcc/jmp` loop patterns,
   2+ `cmp reg, val` + `je label` chains for `switch`, `loop label` for ECX-counted loops,
@@ -94,7 +98,7 @@ Masma currently understands these structural and flow-level MASM constructs:
 
 ### Control flow step types
 
-The domain and renderer define the following step types. Ten are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
+The domain and renderer define the following step types. Twelve are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
 
 | Step type | Symbol | Source | Notes |
 |---|---|---|---|
@@ -108,6 +112,8 @@ The domain and renderer define the following step types. Ten are fully produced 
 | `CallFlowStep` | ⇒ | direct `call proc` (not indirect `call [reg]`) | indirect calls stay as `ActionFlowStep` |
 | `MacroCallFlowStep` | ▷ | user-defined `name MACRO …/ENDM` calls detected by scanning source | args shown inline |
 | `RepeatStringFlowStep` | ⊛ | `REP`/`REPE`/`REPNE` string instructions; absorbs preceding `mov ecx, n` | `rep movsd`, `repne scasb`, etc. |
+| `LabelFlowStep` | — ruler — | standalone `name:` labels not consumed by loop/jump recovery | thin muted separator marker |
+| `IfdefFlowStep` | `# IFDEF …` | assembly-time conditionals: `IFDEF`/`IFNDEF`/`IF` (no dot) … `ENDIF` | dashed grey border; body content visible |
 | `GuardFlowStep` | — | not applicable | early-exit guard has no clean linear mapping in MASM |
 | `DoCatchFlowStep` / `CatchClauseFlow` | — | not applicable | structured exception handling has no natural MASM directive equivalent |
 | `DeferFlowStep` | — | not applicable | deferred cleanup has no natural MASM directive equivalent |

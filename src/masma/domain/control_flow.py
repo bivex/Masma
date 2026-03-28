@@ -16,6 +16,11 @@ class ActionFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class LabelFlowStep(ControlFlowStep):
+    name: str  # label name without the trailing colon
+
+
+@dataclass(frozen=True, slots=True)
 class IfFlowStep(ControlFlowStep):
     condition: str
     then_steps: tuple[ControlFlowStep, ...]
@@ -124,4 +129,5 @@ class FunctionControlFlow:
 class ControlFlowDiagram:
     source_location: str
     functions: tuple[FunctionControlFlow, ...]
+    file_header: str | None = None
 

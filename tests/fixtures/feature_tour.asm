@@ -1,4 +1,7 @@
-;; feature_tour.asm — covers every implemented control-flow step type
+; feature_tour.asm — covers every implemented control-flow step type
+; Exercises ActionFlowStep, IfFlowStep, WhileFlowStep, RepeatWhileFlowStep,
+; SwitchFlowStep, ForInFlowStep, InvokeFlowStep, CallFlowStep,
+; MacroCallFlowStep, RepeatStringFlowStep, IfdefFlowStep, LabelFlowStep.
 
 .data
     msg_title   db "Masma", 0
@@ -189,7 +192,22 @@ proc_next:
     ret
 demo_composite ENDP
 
-; ─── 13. MacroCallFlowStep (user-defined macro expansion) ─────────────────────
+; ─── 13. LabelFlowStep (standalone label — not part of any loop or jump) ──────
+demo_label PROC
+    mov  eax, 0
+setup_phase:
+    mov  ebx, 1
+    mov  ecx, 2
+process_phase:
+    add  eax, ebx
+    add  eax, ecx
+teardown_phase:
+    xor  ebx, ebx
+    xor  ecx, ecx
+    ret
+demo_label ENDP
+
+; ─── 14. MacroCallFlowStep (user-defined macro expansion) ─────────────────────
 demo_macro PROC
     ZERO_REG eax
     ZERO_REG ebx
