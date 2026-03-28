@@ -7,9 +7,12 @@ import re
 from masma.domain.control_flow import (
     ActionFlowStep,
     ControlFlowDiagram,
+    ForInFlowStep,
     IfFlowStep,
     FunctionControlFlow,
     RepeatWhileFlowStep,
+    SwitchCaseFlow,
+    SwitchFlowStep,
     WhileFlowStep,
 )
 from masma.domain.model import SourceUnit
@@ -34,6 +37,11 @@ from masma.infrastructure.masm.support import (
 _COMPARE_RE = re.compile(r"^(?P<op>cmp|test)\s+(?P<lhs>[^,]+)\s*,\s*(?P<rhs>.+)$", re.IGNORECASE)
 _COND_JUMP_RE = re.compile(r"^(?P<op>j(?:e|z|ne|nz|g|ge|l|le|a|ae|b|be|c|nc|na|nae|nb|nbe|ng|nge|nl|nle))\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$", re.IGNORECASE)
 _JMP_RE = re.compile(r"^jmp\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$", re.IGNORECASE)
+_LOOP_INSTR_RE = re.compile(
+    r"^(?P<op>loop(?:e|ne|z|nz)?)\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$",
+    re.IGNORECASE,
+)
+_MOV_ECX_RE = re.compile(r"^mov\s+(?P<reg>e?cx)\s*,\s*(?P<val>.+)$", re.IGNORECASE)
 
 _CMP_PREDICATES = {
     "je": "==",
@@ -128,6 +136,28 @@ def _parse_sequence(
         )
         if jump_loop is not None:
             step, index = jump_loop
+            # When a ForInFlowStep was recovered via the loop instruction, the
+            # immediately preceding ActionFlowStep that held "mov ecx, N" has
+            # been absorbed into the header.  Remove it from steps so it is not
+            # emitted twice.
+            if (
+                isinstance(step, ForInFlowStep)
+                and steps
+                and isinstance(steps[-1], ActionFlowStep)
+                and _MOV_ECX_RE.match(steps[-1].label)
+            ):
+                steps.pop()
+            steps.append(step)
+            continue
+
+        switch_result = _parse_switch(
+            lines, index,
+            label_positions=label_positions,
+            stop_tokens=stop_tokens,
+            end_index=end_index,
+        )
+        if switch_result is not None:
+            step, index = switch_result
             steps.append(step)
             continue
 
@@ -418,6 +448,24 @@ def _parse_bottom_tested_jump_loop(lines, index: int, *, label_name: str, label_
                 search_index + 1,
             )
 
+        loop_match = _LOOP_INSTR_RE.match(lines[search_index].text)
+        if loop_match is not None and loop_match.group("label").lower() == label_name.lower():
+            body_steps, _ = _parse_sequence(
+                lines, index + 1,
+                label_positions=label_positions,
+                stop_tokens=frozenset(),
+                end_index=search_index,
+            )
+            if not body_steps:
+                return None
+            return (
+                ForInFlowStep(
+                    header=_infer_loop_counter_header(lines, index),
+                    body_steps=body_steps,
+                ),
+                search_index + 1,
+            )
+
         search_index += 1
 
     return None
@@ -611,3 +659,162 @@ def _invert_condition_text(condition: str) -> str:
             lhs, rhs = condition.split(surrounded, 1)
             return f"{lhs}{' '}{inverse}{' '}{rhs}"
     return f"not ({condition})"
+
+
+def _parse_switch(lines, index: int, *, label_positions, stop_tokens, end_index: int):
+    """Detect a cmp/je chain switch pattern starting at index.
+
+    Requires >= 2 consecutive (cmp reg, val / je label) pairs with the same
+    register.  Returns (SwitchFlowStep, next_index) or None.
+    """
+    scan = index
+    pairs: list[tuple[str, str, int]] = []  # (val, case_label, case_label_index)
+    first_reg: str | None = None
+
+    while scan < end_index:
+        text = lines[scan].text
+        if not text or _should_skip(text):
+            scan += 1
+            continue
+
+        cmp_match = _COMPARE_RE.match(text)
+        if cmp_match is None or cmp_match.group("op").lower() != "cmp":
+            break
+
+        reg = compact_text(cmp_match.group("lhs").strip(), limit=40)
+        val = compact_text(cmp_match.group("rhs").strip(), limit=40)
+
+        if first_reg is None:
+            first_reg = reg
+        elif reg.lower() != first_reg.lower():
+            break
+
+        # Must be followed by je or jz
+        next_scan = scan + 1
+        while next_scan < end_index and (not lines[next_scan].text or _should_skip(lines[next_scan].text)):
+            next_scan += 1
+
+        if next_scan >= end_index:
+            break
+
+        jump_info = _parse_conditional_jump(lines[next_scan].text)
+        if jump_info is None:
+            break
+        jump_op, case_label = jump_info
+        if jump_op.lower() not in ("je", "jz"):
+            break
+
+        case_label_index = label_positions.get(case_label.lower())
+        if case_label_index is None or case_label_index <= next_scan:
+            break
+
+        pairs.append((val, case_label, case_label_index))
+        scan = next_scan + 1
+
+    if len(pairs) < 2 or first_reg is None:
+        return None
+
+    # Check for optional trailing jmp default_label
+    default_label: str | None = None
+    default_label_index: int | None = None
+    trailing = scan
+    while trailing < end_index and (not lines[trailing].text or _should_skip(lines[trailing].text)):
+        trailing += 1
+    if trailing < end_index:
+        jmp_label = _parse_unconditional_jump(lines[trailing].text)
+        if jmp_label is not None:
+            jmp_index = label_positions.get(jmp_label.lower())
+            if jmp_index is not None and jmp_index > trailing:
+                default_label = jmp_label
+                default_label_index = jmp_index
+                scan = trailing + 1
+
+    # Region containing all case bodies starts after the last je/jmp header
+    region_start = scan
+
+    # Find exit label — the common jmp target used at end of each case body
+    case_count = len(pairs) + (1 if default_label is not None else 0)
+    exit_label, exit_label_index = _find_switch_exit(
+        lines, region_start, end_index, label_positions, case_count
+    )
+    if exit_label is None or exit_label_index is None:
+        return None
+
+    # Build sorted list of all case labels (val, label_str, label_index)
+    all_cases: list[tuple[str, str, int]] = [(val, lbl, idx) for val, lbl, idx in pairs]
+    if default_label is not None and default_label_index is not None:
+        all_cases.append(("default", default_label, default_label_index))
+    all_cases.sort(key=lambda t: t[2])
+
+    # Parse each case body between its label and the next case/exit label
+    case_boundaries = [idx for _, _, idx in all_cases] + [exit_label_index]
+
+    cases: list[SwitchCaseFlow] = []
+    for i, (val, _lbl, lbl_idx) in enumerate(all_cases):
+        body_end = case_boundaries[i + 1]
+        # Trim trailing jmp exit_label from body
+        body_end_trimmed = body_end
+        for scan_back in range(body_end - 1, lbl_idx, -1):
+            text = lines[scan_back].text
+            if not text or _should_skip(text):
+                continue
+            jmp = _parse_unconditional_jump(text)
+            if jmp is not None and jmp.lower() == exit_label.lower():
+                body_end_trimmed = scan_back
+            break
+
+        body_steps, _ = _parse_sequence(
+            lines,
+            lbl_idx + 1,
+            label_positions=label_positions,
+            stop_tokens=frozenset(),
+            end_index=body_end_trimmed,
+        )
+        cases.append(SwitchCaseFlow(label=val, steps=body_steps))
+
+    return (
+        SwitchFlowStep(expression=first_reg, cases=tuple(cases)),
+        exit_label_index + 1,
+    )
+
+
+def _find_switch_exit(lines, region_start: int, end_index: int, label_positions: dict[str, int], case_count: int):
+    """Find the most common forward jmp target label in [region_start, end_index).
+
+    Returns (label_str, label_index) or (None, None).
+    """
+    counts: dict[str, int] = {}
+    for i in range(region_start, end_index):
+        jmp = _parse_unconditional_jump(lines[i].text)
+        if jmp is None:
+            continue
+        jmp_idx = label_positions.get(jmp.lower())
+        if jmp_idx is not None and jmp_idx >= region_start:
+            counts[jmp] = counts.get(jmp, 0) + 1
+
+    if not counts:
+        return None, None
+
+    threshold = max(1, case_count - 1)
+    best_label = max(counts, key=lambda l: counts[l])
+    if counts[best_label] < threshold:
+        return None, None
+
+    best_index = label_positions.get(best_label.lower())
+    if best_index is None:
+        return None, None
+    return best_label, best_index
+
+
+def _infer_loop_counter_header(lines, label_index: int) -> str:
+    """Search backwards up to 5 lines from label_index for mov ecx/cx, N."""
+    for back in range(label_index - 1, max(-1, label_index - 6), -1):
+        text = lines[back].text
+        if not text:
+            continue
+        mov_match = _MOV_ECX_RE.match(text)
+        if mov_match is not None:
+            reg = mov_match.group("reg")
+            val = compact_text(mov_match.group("val").strip(), limit=40)
+            return f"{reg} = {val}"
+    return "ecx"

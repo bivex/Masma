@@ -12,9 +12,11 @@ from masma.application.control_flow import (
 from masma.domain.control_flow import (
     ActionFlowStep,
     ControlFlowDiagram,
+    ForInFlowStep,
     FunctionControlFlow,
     IfFlowStep,
     RepeatWhileFlowStep,
+    SwitchFlowStep,
     WhileFlowStep,
 )
 from masma.domain.model import SourceUnit, SourceUnitId
@@ -228,3 +230,68 @@ class TestIfDepthRendering:
         html = renderer.render(diagram)
         assert "ns-if-depth-0" in html
         assert "ns-if-depth-1" in html
+
+
+def test_control_flow_extractor_produces_switch_from_cmp_je_chain() -> None:
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("switch-flow"),
+        location="switch-flow.asm",
+        content="""
+switchy PROC
+    cmp eax, 1
+    je case1
+    cmp eax, 2
+    je case2
+    cmp eax, 3
+    je case3
+    jmp default_case
+case1:
+    mov ebx, 10
+    jmp end_switch
+case2:
+    mov ebx, 20
+    jmp end_switch
+case3:
+    mov ebx, 30
+    jmp end_switch
+default_case:
+    mov ebx, 0
+end_switch:
+    ret
+switchy ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], SwitchFlowStep)
+    assert steps[0].expression == "eax"
+    assert len(steps[0].cases) == 4
+    labels = [c.label for c in steps[0].cases]
+    assert "1" in labels
+    assert "2" in labels
+    assert "3" in labels
+    assert "default" in labels
+    assert steps[0].cases[0].steps[0].label == "mov ebx, 10"
+
+
+def test_control_flow_extractor_produces_for_in_from_loop_instruction() -> None:
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("forin-flow"),
+        location="forin-flow.asm",
+        content="""
+counter PROC
+    mov ecx, 10
+loop_start:
+    dec eax
+    loop loop_start
+    ret
+counter ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], ForInFlowStep)
+    assert "10" in steps[0].header
+    assert steps[0].body_steps[0].label == "dec eax"

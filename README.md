@@ -86,6 +86,22 @@ Masma currently understands these structural and flow-level MASM constructs:
   `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, and label-based `jcc/jmp` loop patterns
 * an ANTLR-backed structural parser derived from the upstream `grammars-v4` MASM grammar and patched for Masma's working subset
 
+### Control flow step types
+
+The domain and renderer define the following step types. Only the four marked **implemented** are produced by the MASM extractor today; the rest exist in the domain model and renderer but have no extractor backend.
+
+| Step type | Status | Notes |
+|---|---|---|
+| `ActionFlowStep` | implemented | straight-line instruction blocks |
+| `IfFlowStep` | implemented | `.IF/.ELSEIF/.ELSE/.ENDIF` and recovered `cmp/jcc` |
+| `WhileFlowStep` | implemented | `.WHILE/.ENDW` |
+| `RepeatWhileFlowStep` | implemented | `.REPEAT/.UNTIL` / `.REPEAT/.UNTILCXZ` |
+| `SwitchFlowStep` / `SwitchCaseFlow` | implemented | 2+ `cmp reg, val` + `je label` chains with same register |
+| `ForInFlowStep` | implemented | MASM `loop` instruction (decrements ECX, jumps if non-zero) |
+| `GuardFlowStep` | not applicable | early-exit guard has no clean linear mapping in MASM |
+| `DoCatchFlowStep` / `CatchClauseFlow` | not applicable | structured exception handling has no natural MASM directive equivalent |
+| `DeferFlowStep` | not applicable | deferred cleanup has no natural MASM directive equivalent |
+
 ## Constraints and honesty
 
 Masma is intentionally honest about scope. It is a MASM source analyzer, not a full assembler or compiler frontend. It does not resolve includes, execute macros, or recover low-level control flow from arbitrary jump graphs. The strongest diagram output comes from MASM code that uses structured directives.
