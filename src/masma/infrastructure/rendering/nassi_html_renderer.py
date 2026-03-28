@@ -230,6 +230,24 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         font-weight: 600;
         color: var(--text-bright);
         line-height: 1.3;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }}
+      .anchor-link {{
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--muted);
+        text-decoration: none;
+        opacity: 0;
+        transition: opacity 0.15s;
+        flex-shrink: 0;
+      }}
+      .function-head:hover .anchor-link {{
+        opacity: 1;
+      }}
+      .anchor-link:hover {{
+        color: var(--blue);
       }}
       .function-panel.is-macro {{
         border-color: var(--purple-dim);
@@ -817,10 +835,12 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         entry_badge = '<span class="entry-badge">▶ entry</span>' if is_entry else ""
         seg = getattr(function, "segment", None)
         seg_badge = f'<span class="segment-badge">{escape(seg)}</span>' if seg else ""
+        anchor_id = re.sub(r"[^a-zA-Z0-9_-]", "-", function.name).strip("-").lower()
+        anchor_link = f'<a class="anchor-link" href="#{anchor_id}" title="Link to {escape(function.name)}">#</a>'
         return (
-            f'<section class="{panel_class}">'
+            f'<section class="{panel_class}" id="{anchor_id}">'
             '<div class="function-head">'
-            f'<h2 class="function-title">{seg_badge}{kind_badge}{entry_badge}{escape(function.qualified_name)}</h2>'
+            f'<h2 class="function-title">{seg_badge}{kind_badge}{entry_badge}{escape(function.qualified_name)}{anchor_link}</h2>'
             f'<div class="function-signature">{escape(function.signature)}</div>'
             "</div>"
             '<div class="function-body">'
