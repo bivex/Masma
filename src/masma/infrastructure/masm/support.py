@@ -194,6 +194,13 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
                 )
             continue
 
+        seg_m = SEGMENT_RE.match(line.text)
+        if seg_m and seg_m.group("kind"):  # 'identifier SEGMENT', not a .data/.code directive
+            seg_name = seg_m.group("name")
+            if not seg_name.startswith("."):
+                stack.append(("SEGMENT", seg_name, line.number))
+            continue
+
         if struct_match := STRUCT_RE.match(line.text):
             stack.append(("STRUCT", struct_match.group("name"), line.number))
             continue
@@ -203,7 +210,7 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
             continue
 
         if ends_match := ENDS_RE.match(line.text):
-            if not stack or stack[-1][0] != "STRUCT":
+            if not stack or stack[-1][0] not in ("STRUCT", "SEGMENT"):
                 diagnostics.append(_error("ENDS without matching STRUCT/UNION", line.number))
                 continue
             _, expected_name, _ = stack.pop()

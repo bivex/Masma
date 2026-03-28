@@ -88,7 +88,7 @@ endmStmt
     ;
 
 condAssembleStmt
-    : (IFDEF | IFNDEF | IF1 | IF2 | IF_BARE | ELSEIF_BARE) lineItems?
+    : (IFDEF | IFNDEF | IFDIF | IFDIFI | IFIDN | IFIDNI | IFB | IFNB | IF1 | IF2 | IF_BARE | ELSEIF_BARE | ELSEIFDEF | ELSEIFNDEF) lineItems?
     ;
 
 condAssembleElse
@@ -164,10 +164,18 @@ SEGMENT         : S E G M E N T ;
 // Conditional assembly directives (bare, no dot)
 IFDEF           : I F D E F ;
 IFNDEF          : I F N D E F ;
+IFDIF           : I F D I F ;
+IFDIFI          : I F D I F I ;
+IFIDN           : I F I D N ;
+IFIDNI          : I F I D N I ;
+IFB             : I F B ;
+IFNB            : I F N B ;
 IF1             : I F '1' ;
 IF2             : I F '2' ;
 IF_BARE         : I F ;
 ELSEIF_BARE     : E L S E I F ;
+ELSEIFDEF       : E L S E I F D E F ;
+ELSEIFNDEF      : E L S E I F N D E F ;
 ELSE_BARE       : E L S E ;
 ENDIF_BARE      : E N D I F ;
 
@@ -239,7 +247,8 @@ STRING
     : '"' ( '\\' . | ~["\\\r\n] )* '"'
     | '\'' ( '\\' . | ~['\\\r\n] )* '\''
     ;
-WORD            : ~[ \t\r\n:]+ ;
+COMMENT         : ';' ~[\r\n]* -> skip ;
+WORD            : ~[ \t\r\n:;]+ ;
 WS              : [ \t]+ -> skip ;
 EOL             : '\r'? '\n' ;
 

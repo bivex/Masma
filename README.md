@@ -9,7 +9,7 @@ Today the system supports:
 * parsing one `.asm` or `.inc` file
 * parsing a directory recursively and ignoring non-MASM files
 * extracting a stable structural model with includes, constants, variables, segments, structs, macros, procedures, and labels
-* reporting syntax diagnostics for unbalanced `PROC/ENDP`, `STRUCT/ENDS`, `MACRO/ENDM`, and structured flow directives
+* reporting syntax diagnostics for unbalanced `PROC/ENDP`, `STRUCT/ENDS`, named `SEGMENT/ENDS`, `MACRO/ENDM`, and structured flow directives
 * extracting structured control flow from MASM procedures that use `.IF/.ELSEIF/.ELSE/.ENDIF`, `.WHILE/.ENDW`, `.REPEAT/.UNTIL`, recovered `cmp/je` switch chains, and MASM `loop`-counted loops
 * extracting the leading comment header block from a source file and showing it in the diagram
 * rendering standalone MASM labels (`name:`) as visual separator markers inside procedure diagrams
@@ -89,7 +89,8 @@ Masma currently understands these structural and flow-level MASM constructs:
 * `.IF/.ELSEIF/.ELSE/.ENDIF`
 * `.WHILE/.ENDW`
 * `.REPEAT/.UNTIL` and `.REPEAT/.UNTILCXZ`
-* assembly-time conditionals: `IFDEF`/`IFNDEF`/`IF`/`IFNDEF`/`IFDIF`/`IFIDN`/`IFB`/`IFNB` … `ENDIF`
+* assembly-time conditionals: `IFDEF`/`IFNDEF`/`IFDIF`/`IFDIFI`/`IFIDN`/`IFIDNI`/`IFB`/`IFNB`/`IF1`/`IF2`/`IF` … `ELSEIF`/`ELSEIFDEF`/`ELSEIFNDEF`/`ELSE`/`ENDIF`
+* `;` line comments correctly skipped by the ANTLR lexer (previously comment text leaked into token stream)
 * heuristic recovery of common jump-based flow:
   `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, label-based `jcc/jmp` loop patterns,
   2+ `cmp reg, val` + `je label` chains for `switch`, `loop label` for ECX-counted loops,

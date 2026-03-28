@@ -1,4 +1,4 @@
-# Generated from resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
+# Generated from /Volumes/External/Code/Masma/resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,58,199,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,67,199,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
@@ -27,17 +27,17 @@ def serializedATN():
         182,8,24,11,24,12,24,183,1,25,1,25,1,25,1,25,1,25,3,25,191,8,25,
         1,26,1,26,1,27,1,27,1,28,1,28,1,28,0,0,29,0,2,4,6,8,10,12,14,16,
         18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,0,6,
-        1,0,1,2,1,0,28,31,1,0,14,19,1,0,22,27,1,0,32,40,1,0,41,53,212,0,
+        1,0,1,2,1,0,36,39,1,0,14,27,1,0,30,35,1,0,40,48,1,0,49,61,212,0,
         62,1,0,0,0,2,68,1,0,0,0,4,96,1,0,0,0,6,98,1,0,0,0,8,102,1,0,0,0,
         10,107,1,0,0,0,12,112,1,0,0,0,14,117,1,0,0,0,16,119,1,0,0,0,18,124,
         1,0,0,0,20,133,1,0,0,0,22,135,1,0,0,0,24,140,1,0,0,0,26,142,1,0,
         0,0,28,146,1,0,0,0,30,148,1,0,0,0,32,150,1,0,0,0,34,154,1,0,0,0,
         36,159,1,0,0,0,38,162,1,0,0,0,40,165,1,0,0,0,42,170,1,0,0,0,44,174,
         1,0,0,0,46,178,1,0,0,0,48,181,1,0,0,0,50,190,1,0,0,0,52,192,1,0,
-        0,0,54,194,1,0,0,0,56,196,1,0,0,0,58,61,3,2,1,0,59,61,5,58,0,0,60,
+        0,0,54,194,1,0,0,0,56,196,1,0,0,0,58,61,3,2,1,0,59,61,5,67,0,0,60,
         58,1,0,0,0,60,59,1,0,0,0,61,64,1,0,0,0,62,60,1,0,0,0,62,63,1,0,0,
         0,63,65,1,0,0,0,64,62,1,0,0,0,65,66,5,0,0,1,66,1,1,0,0,0,67,69,3,
-        4,2,0,68,67,1,0,0,0,68,69,1,0,0,0,69,71,1,0,0,0,70,72,5,58,0,0,71,
+        4,2,0,68,67,1,0,0,0,68,69,1,0,0,0,69,71,1,0,0,0,70,72,5,67,0,0,71,
         70,1,0,0,0,72,73,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,3,1,0,0,
         0,75,97,3,6,3,0,76,97,3,8,4,0,77,97,3,10,5,0,78,97,3,12,6,0,79,97,
         3,14,7,0,80,97,3,16,8,0,81,97,3,18,9,0,82,97,3,20,10,0,83,97,3,22,
@@ -63,21 +63,21 @@ def serializedATN():
         3,52,26,0,136,138,5,10,0,0,137,139,3,48,24,0,138,137,1,0,0,0,138,
         139,1,0,0,0,139,23,1,0,0,0,140,141,5,11,0,0,141,25,1,0,0,0,142,144,
         7,2,0,0,143,145,3,48,24,0,144,143,1,0,0,0,144,145,1,0,0,0,145,27,
-        1,0,0,0,146,147,5,20,0,0,147,29,1,0,0,0,148,149,5,21,0,0,149,31,
+        1,0,0,0,146,147,5,28,0,0,147,29,1,0,0,0,148,149,5,29,0,0,149,31,
         1,0,0,0,150,152,7,3,0,0,151,153,3,48,24,0,152,151,1,0,0,0,152,153,
         1,0,0,0,153,33,1,0,0,0,154,155,3,52,26,0,155,157,5,5,0,0,156,158,
         3,48,24,0,157,156,1,0,0,0,157,158,1,0,0,0,158,35,1,0,0,0,159,160,
         3,52,26,0,160,161,5,6,0,0,161,37,1,0,0,0,162,163,3,52,26,0,163,164,
-        5,54,0,0,164,39,1,0,0,0,165,166,3,52,26,0,166,168,3,56,28,0,167,
+        5,62,0,0,164,39,1,0,0,0,165,166,3,52,26,0,166,168,3,56,28,0,167,
         169,3,48,24,0,168,167,1,0,0,0,168,169,1,0,0,0,169,41,1,0,0,0,170,
         172,3,54,27,0,171,173,3,48,24,0,172,171,1,0,0,0,172,173,1,0,0,0,
         173,43,1,0,0,0,174,176,5,12,0,0,175,177,3,48,24,0,176,175,1,0,0,
         0,176,177,1,0,0,0,177,45,1,0,0,0,178,179,3,48,24,0,179,47,1,0,0,
         0,180,182,3,50,25,0,181,180,1,0,0,0,182,183,1,0,0,0,183,181,1,0,
-        0,0,183,184,1,0,0,0,184,49,1,0,0,0,185,191,5,56,0,0,186,191,5,55,
-        0,0,187,191,5,54,0,0,188,191,3,56,28,0,189,191,3,54,27,0,190,185,
+        0,0,183,184,1,0,0,0,184,49,1,0,0,0,185,191,5,65,0,0,186,191,5,63,
+        0,0,187,191,5,62,0,0,188,191,3,56,28,0,189,191,3,54,27,0,190,185,
         1,0,0,0,190,186,1,0,0,0,190,187,1,0,0,0,190,188,1,0,0,0,190,189,
-        1,0,0,0,191,51,1,0,0,0,192,193,5,56,0,0,193,53,1,0,0,0,194,195,7,
+        1,0,0,0,191,51,1,0,0,0,192,193,5,65,0,0,193,53,1,0,0,0,194,195,7,
         4,0,0,195,55,1,0,0,0,196,197,7,5,0,0,197,57,1,0,0,0,21,60,62,68,
         73,96,100,105,110,115,122,127,133,138,144,152,157,168,172,176,183,
         190
@@ -106,19 +106,23 @@ class MasmParser ( Parser ):
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "':'" ]
 
     symbolicNames = [ "<INVALID>", "INCLUDE", "INCLUDELIB", "EQU", "TYPEDEF", 
                       "PROC", "ENDP", "STRUCT", "UNION", "ENDS", "MACRO", 
-                      "ENDM", "END", "SEGMENT", "IFDEF", "IFNDEF", "IF1", 
-                      "IF2", "IF_BARE", "ELSEIF_BARE", "ELSE_BARE", "ENDIF_BARE", 
-                      "FOR", "FORC", "IRP", "IRPC", "REPT", "WHILE_BARE", 
-                      "DATA_SEG", "DATAQ_SEG", "CONST_SEG", "CODE_SEG", 
-                      "IF_DIR", "ELSEIF_DIR", "ELSE_DIR", "ENDIF_DIR", "WHILE_DIR", 
-                      "ENDW_DIR", "REPEAT_DIR", "UNTIL_DIR", "UNTILCXZ_DIR", 
-                      "DB", "DW", "DD", "DQ", "DT", "BYTE", "WORD_TYPE", 
-                      "DWORD", "QWORD", "TBYTE", "REAL4", "REAL8", "REAL10", 
-                      "COLON", "STRING", "WORD", "WS", "EOL" ]
+                      "ENDM", "END", "SEGMENT", "IFDEF", "IFNDEF", "IFDIF", 
+                      "IFDIFI", "IFIDN", "IFIDNI", "IFB", "IFNB", "IF1", 
+                      "IF2", "IF_BARE", "ELSEIF_BARE", "ELSEIFDEF", "ELSEIFNDEF", 
+                      "ELSE_BARE", "ENDIF_BARE", "FOR", "FORC", "IRP", "IRPC", 
+                      "REPT", "WHILE_BARE", "DATA_SEG", "DATAQ_SEG", "CONST_SEG", 
+                      "CODE_SEG", "IF_DIR", "ELSEIF_DIR", "ELSE_DIR", "ENDIF_DIR", 
+                      "WHILE_DIR", "ENDW_DIR", "REPEAT_DIR", "UNTIL_DIR", 
+                      "UNTILCXZ_DIR", "DB", "DW", "DD", "DQ", "DT", "BYTE", 
+                      "WORD_TYPE", "DWORD", "QWORD", "TBYTE", "REAL4", "REAL8", 
+                      "REAL10", "COLON", "STRING", "COMMENT", "WORD", "WS", 
+                      "EOL" ]
 
     RULE_compilationUnit = 0
     RULE_line = 1
@@ -175,49 +179,58 @@ class MasmParser ( Parser ):
     SEGMENT=13
     IFDEF=14
     IFNDEF=15
-    IF1=16
-    IF2=17
-    IF_BARE=18
-    ELSEIF_BARE=19
-    ELSE_BARE=20
-    ENDIF_BARE=21
-    FOR=22
-    FORC=23
-    IRP=24
-    IRPC=25
-    REPT=26
-    WHILE_BARE=27
-    DATA_SEG=28
-    DATAQ_SEG=29
-    CONST_SEG=30
-    CODE_SEG=31
-    IF_DIR=32
-    ELSEIF_DIR=33
-    ELSE_DIR=34
-    ENDIF_DIR=35
-    WHILE_DIR=36
-    ENDW_DIR=37
-    REPEAT_DIR=38
-    UNTIL_DIR=39
-    UNTILCXZ_DIR=40
-    DB=41
-    DW=42
-    DD=43
-    DQ=44
-    DT=45
-    BYTE=46
-    WORD_TYPE=47
-    DWORD=48
-    QWORD=49
-    TBYTE=50
-    REAL4=51
-    REAL8=52
-    REAL10=53
-    COLON=54
-    STRING=55
-    WORD=56
-    WS=57
-    EOL=58
+    IFDIF=16
+    IFDIFI=17
+    IFIDN=18
+    IFIDNI=19
+    IFB=20
+    IFNB=21
+    IF1=22
+    IF2=23
+    IF_BARE=24
+    ELSEIF_BARE=25
+    ELSEIFDEF=26
+    ELSEIFNDEF=27
+    ELSE_BARE=28
+    ENDIF_BARE=29
+    FOR=30
+    FORC=31
+    IRP=32
+    IRPC=33
+    REPT=34
+    WHILE_BARE=35
+    DATA_SEG=36
+    DATAQ_SEG=37
+    CONST_SEG=38
+    CODE_SEG=39
+    IF_DIR=40
+    ELSEIF_DIR=41
+    ELSE_DIR=42
+    ENDIF_DIR=43
+    WHILE_DIR=44
+    ENDW_DIR=45
+    REPEAT_DIR=46
+    UNTIL_DIR=47
+    UNTILCXZ_DIR=48
+    DB=49
+    DW=50
+    DD=51
+    DQ=52
+    DT=53
+    BYTE=54
+    WORD_TYPE=55
+    DWORD=56
+    QWORD=57
+    TBYTE=58
+    REAL4=59
+    REAL8=60
+    REAL10=61
+    COLON=62
+    STRING=63
+    COMMENT=64
+    WORD=65
+    WS=66
+    EOL=67
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -273,7 +286,7 @@ class MasmParser ( Parser ):
             self.state = 62
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 432345564227557894) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -9722) != 0) or _la==65 or _la==67:
                 self.state = 60
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -342,7 +355,7 @@ class MasmParser ( Parser ):
             self.state = 68
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115188075846150) != 0):
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & -9722) != 0) or _la==65:
                 self.state = 67
                 self.statement()
 
@@ -663,7 +676,7 @@ class MasmParser ( Parser ):
             self.state = 100
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 99
                 self.lineItems()
 
@@ -721,7 +734,7 @@ class MasmParser ( Parser ):
             self.state = 105
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 104
                 self.lineItems()
 
@@ -779,7 +792,7 @@ class MasmParser ( Parser ):
             self.state = 110
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 109
                 self.lineItems()
 
@@ -837,7 +850,7 @@ class MasmParser ( Parser ):
             self.state = 115
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 114
                 self.lineItems()
 
@@ -891,7 +904,7 @@ class MasmParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 117
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4026531840) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1030792151040) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -949,7 +962,7 @@ class MasmParser ( Parser ):
             self.state = 122
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 121
                 self.lineItems()
 
@@ -1007,7 +1020,7 @@ class MasmParser ( Parser ):
             self.state = 127
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 126
                 self.lineItems()
 
@@ -1055,7 +1068,7 @@ class MasmParser ( Parser ):
             self.state = 133
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [56]:
+            if token in [65]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 129
                 self.identifier()
@@ -1123,7 +1136,7 @@ class MasmParser ( Parser ):
             self.state = 138
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 137
                 self.lineItems()
 
@@ -1189,6 +1202,24 @@ class MasmParser ( Parser ):
         def IFNDEF(self):
             return self.getToken(MasmParser.IFNDEF, 0)
 
+        def IFDIF(self):
+            return self.getToken(MasmParser.IFDIF, 0)
+
+        def IFDIFI(self):
+            return self.getToken(MasmParser.IFDIFI, 0)
+
+        def IFIDN(self):
+            return self.getToken(MasmParser.IFIDN, 0)
+
+        def IFIDNI(self):
+            return self.getToken(MasmParser.IFIDNI, 0)
+
+        def IFB(self):
+            return self.getToken(MasmParser.IFB, 0)
+
+        def IFNB(self):
+            return self.getToken(MasmParser.IFNB, 0)
+
         def IF1(self):
             return self.getToken(MasmParser.IF1, 0)
 
@@ -1200,6 +1231,12 @@ class MasmParser ( Parser ):
 
         def ELSEIF_BARE(self):
             return self.getToken(MasmParser.ELSEIF_BARE, 0)
+
+        def ELSEIFDEF(self):
+            return self.getToken(MasmParser.ELSEIFDEF, 0)
+
+        def ELSEIFNDEF(self):
+            return self.getToken(MasmParser.ELSEIFNDEF, 0)
 
         def lineItems(self):
             return self.getTypedRuleContext(MasmParser.LineItemsContext,0)
@@ -1226,7 +1263,7 @@ class MasmParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 142
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1032192) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 268419072) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1234,7 +1271,7 @@ class MasmParser ( Parser ):
             self.state = 144
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 143
                 self.lineItems()
 
@@ -1376,7 +1413,7 @@ class MasmParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 150
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 264241152) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 67645734912) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1384,7 +1421,7 @@ class MasmParser ( Parser ):
             self.state = 152
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 151
                 self.lineItems()
 
@@ -1442,7 +1479,7 @@ class MasmParser ( Parser ):
             self.state = 157
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 156
                 self.lineItems()
 
@@ -1591,7 +1628,7 @@ class MasmParser ( Parser ):
             self.state = 168
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 167
                 self.lineItems()
 
@@ -1644,7 +1681,7 @@ class MasmParser ( Parser ):
             self.state = 172
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 171
                 self.lineItems()
 
@@ -1696,7 +1733,7 @@ class MasmParser ( Parser ):
             self.state = 176
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+            if ((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0):
                 self.state = 175
                 self.lineItems()
 
@@ -1792,7 +1829,7 @@ class MasmParser ( Parser ):
                 self.state = 183 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0)):
+                if not (((((_la - 40)) & ~0x3f) == 0 and ((1 << (_la - 40)) & 50331647) != 0)):
                     break
 
         except RecognitionException as re:
@@ -1848,27 +1885,27 @@ class MasmParser ( Parser ):
             self.state = 190
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [56]:
+            if token in [65]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 185
                 self.match(MasmParser.WORD)
                 pass
-            elif token in [55]:
+            elif token in [63]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 186
                 self.match(MasmParser.STRING)
                 pass
-            elif token in [54]:
+            elif token in [62]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 187
                 self.match(MasmParser.COLON)
                 pass
-            elif token in [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53]:
+            elif token in [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 188
                 self.dataType()
                 pass
-            elif token in [32, 33, 34, 35, 36, 37, 38, 39, 40]:
+            elif token in [40, 41, 42, 43, 44, 45, 46, 47, 48]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 189
                 self.structuredDirective()
@@ -1979,7 +2016,7 @@ class MasmParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 194
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 2194728288256) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 561850441793536) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2060,7 +2097,7 @@ class MasmParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 196
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 18012199486226432) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4611123068473966592) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

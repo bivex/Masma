@@ -1,4 +1,4 @@
-# Generated from resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
+# Generated from /Volumes/External/Code/Masma/resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .MasmParser import MasmParser
