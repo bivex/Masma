@@ -624,11 +624,13 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         if isinstance(step, ForInFlowStep):
             return self._render_single_body(f"∀ For {step.header}", step.body_steps, depth=depth)
         if isinstance(step, RepeatWhileFlowStep):
+            cond = step.condition
+            footer_text = f"↺ {cond}" if cond.upper().startswith("UNTIL") else f"↺ While {cond}"
             return (
                 '<div class="ns-node ns-repeat">'
                 f"{self._render_header('↺ Repeat')}"
                 f"{self._render_sequence(step.body_steps, depth=depth + 1)}"
-                f"{self._render_footer(f'↺ While {step.condition}')}"
+                f"{self._render_footer(footer_text)}"
                 "</div>"
             )
         if isinstance(step, SwitchFlowStep):
@@ -654,7 +656,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
             return self._render_single_body("Defer", step.body_steps, depth=depth, css_class="ns-defer")
         if isinstance(step, InvokeFlowStep):
             args_text = ", ".join(step.args) if step.args else ""
-            label = f"⇒ INVOKE {step.target}" + (f"  {args_text}" if args_text else "")
+            label = f"⇒ INVOKE {step.target}" + (f", {args_text}" if args_text else "")
             return (
                 '<div class="ns-node ns-invoke">'
                 f'<div class="ns-label" aria-label="Invoke {escape(step.target)}">'
