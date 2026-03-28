@@ -359,6 +359,12 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
     fields: list[StructField] = []
     depth = 0  # track nested struct/union/record
 
+    # Inside struct bodies, accept any identifier as type (HANDLE, SWORD, etc.)
+    _FIELD_RE = re.compile(
+        rf"^(?P<name>{_NAME})\s+(?P<type>{_NAME})\b",
+        re.IGNORECASE,
+    )
+
     for line in lines:
         if current_name is None:
             m = STRUCT_RE.match(line.text)
@@ -397,11 +403,11 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
             fields = []
             continue
 
-        var_m = VARIABLE_RE.match(line.text)
-        if var_m:
+        field_m = _FIELD_RE.match(line.text)
+        if field_m:
             fields.append(StructField(
-                name=var_m.group("name"),
-                type=var_m.group("type").upper(),
+                name=field_m.group("name"),
+                type=field_m.group("type").upper(),
             ))
 
     return tuple(structs)
