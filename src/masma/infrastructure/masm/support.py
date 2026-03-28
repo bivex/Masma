@@ -337,10 +337,15 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
     """Return a sequence of (name, fields, line_number) tuples for each STRUCT block."""
     from masma.domain.control_flow import StructDefinition, StructField
 
+    # Also match bare 'struct' / 'ends' (nested inside UNION, etc.)
+    _BARE_STRUCT_RE = re.compile(r"^\s*struct\s*$", re.IGNORECASE)
+    _BARE_ENDS_RE = re.compile(r"^\s*ends\s*$", re.IGNORECASE)
+
     structs: list[StructDefinition] = []
     current_name: str | None = None
     current_line = 0
     fields: list[StructField] = []
+    depth = 0  # track nested struct/union/record
 
     for line in lines:
         if current_name is None:
@@ -349,6 +354,19 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
                 current_name = m.group("name")
                 current_line = line.number
                 fields = []
+                depth = 0
+            # Also match UNION as a struct-like container
+            elif _BARE_STRUCT_RE.match(line.text):
+                depth = 1
+            continue
+
+        # Nested struct/union inside current struct — track depth
+        if STRUCT_RE.match(line.text) or _BARE_STRUCT_RE.match(line.text):
+            depth += 1
+            continue
+
+        if ENDS_RE.match(line.text) and depth > 0:
+            depth -= 1
             continue
 
         ends_m = ENDS_RE.match(line.text)
