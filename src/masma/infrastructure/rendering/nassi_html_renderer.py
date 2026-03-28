@@ -17,6 +17,7 @@ from masma.domain.control_flow import (
     GuardFlowStep,
     IfFlowStep,
     InvokeFlowStep,
+    MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
     SwitchCaseFlow,
@@ -306,6 +307,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-invoke  > .ns-label {{ background: rgba(166, 218, 149, 0.10); }}
       .ns-ret {{ border-left: 3px solid var(--red); }}
       .ns-ret > .ns-label {{ background: rgba(255, 147, 169, 0.08); }}
+      .ns-macro  {{ background: var(--surface-2); border-left: 3px solid var(--purple); }}
+      .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
 
       .ns-guard   > .ns-header {{ background: var(--orange-dim); color: var(--orange); }}
       .ns-switch  > .ns-header,
@@ -669,6 +672,16 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
             return (
                 '<div class="ns-node ns-invoke">'
                 f'<div class="ns-label" aria-label="Call {escape(step.target)}">'
+                f'<code class="action-text">{escape(label)}</code>'
+                "</div>"
+                "</div>"
+            )
+        if isinstance(step, MacroCallFlowStep):
+            args_text = ", ".join(step.args) if step.args else ""
+            label = f"▷ {step.target}" + (f", {args_text}" if args_text else "")
+            return (
+                '<div class="ns-node ns-macro">'
+                f'<div class="ns-label" aria-label="Macro {escape(step.target)}">'
                 f'<code class="action-text">{escape(label)}</code>'
                 "</div>"
                 "</div>"

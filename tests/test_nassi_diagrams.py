@@ -395,6 +395,65 @@ caller ENDP
     assert steps[1].label == "call [ebx]"
 
 
+def test_control_flow_extractor_produces_macro_call_step() -> None:
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("macro-flow"),
+        location="macro-flow.asm",
+        content="""
+ZERO_REG MACRO reg
+    xor  reg, reg
+ENDM
+
+PRINT_MSG MACRO msg_ptr, title_ptr
+    invoke MessageBoxA, 0, msg_ptr, title_ptr, MB_OK
+ENDM
+
+caller PROC
+    ZERO_REG eax
+    ZERO_REG ebx
+    PRINT_MSG offset msg, offset title
+    ret
+caller ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], MacroCallFlowStep)
+    assert steps[0].target == "ZERO_REG"
+    assert steps[0].args == ("eax",)
+    assert isinstance(steps[1], MacroCallFlowStep)
+    assert steps[1].target == "ZERO_REG"
+    assert steps[1].args == ("ebx",)
+    assert isinstance(steps[2], MacroCallFlowStep)
+    assert steps[2].target == "PRINT_MSG"
+    assert steps[2].args[0] == "offset msg"
+
+
+def test_renderer_renders_macro_call_step() -> None:
+    from masma.domain.control_flow import MacroCallFlowStep
+    renderer = HtmlNassiDiagramRenderer()
+    diagram = ControlFlowDiagram(
+        source_location="macro.asm",
+        functions=(
+            FunctionControlFlow(
+                name="demo",
+                signature="demo PROC",
+                container=None,
+                steps=(
+                    MacroCallFlowStep(target="ZERO_REG", args=("eax",)),
+                    MacroCallFlowStep(target="PRINT_MSG", args=("offset msg", "offset title")),
+                ),
+            ),
+        ),
+    )
+    html = renderer.render(diagram)
+    assert "▷ ZERO_REG" in html
+    assert "▷ PRINT_MSG" in html
+    assert "ns-macro" in html
+
+
 def test_control_flow_extractor_absorbs_mov_ecx_before_rep() -> None:
     extractor = MasmControlFlowExtractor()
     source = SourceUnit(

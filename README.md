@@ -94,7 +94,7 @@ Masma currently understands these structural and flow-level MASM constructs:
 
 ### Control flow step types
 
-The domain and renderer define the following step types. Nine are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
+The domain and renderer define the following step types. Ten are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
 
 | Step type | Symbol | Source | Notes |
 |---|---|---|---|
@@ -106,6 +106,7 @@ The domain and renderer define the following step types. Nine are fully produced
 | `ForInFlowStep` | ∀ | MASM `loop label` instruction (decrements ECX, jumps if non-zero) | |
 | `InvokeFlowStep` | ⇒ | MASM `INVOKE proc, args` macro call | |
 | `CallFlowStep` | ⇒ | direct `call proc` (not indirect `call [reg]`) | indirect calls stay as `ActionFlowStep` |
+| `MacroCallFlowStep` | ▷ | user-defined `name MACRO …/ENDM` calls detected by scanning source | args shown inline |
 | `RepeatStringFlowStep` | ⊛ | `REP`/`REPE`/`REPNE` string instructions; absorbs preceding `mov ecx, n` | `rep movsd`, `repne scasb`, etc. |
 | `GuardFlowStep` | — | not applicable | early-exit guard has no clean linear mapping in MASM |
 | `DoCatchFlowStep` / `CatchClauseFlow` | — | not applicable | structured exception handling has no natural MASM directive equivalent |

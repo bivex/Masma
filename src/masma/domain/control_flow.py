@@ -87,6 +87,12 @@ class CallFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class MacroCallFlowStep(ControlFlowStep):
+    target: str
+    args: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class RepeatStringFlowStep(ControlFlowStep):
     prefix: str
     instruction: str

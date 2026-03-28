@@ -6,6 +6,23 @@
     src_buf     dd 16 dup(0)
     dst_buf     dd 16 dup(0)
 
+; ─── User-defined macros ──────────────────────────────────────────────────────
+ZERO_REG MACRO reg
+    xor  reg, reg
+ENDM
+
+PRINT_MSG MACRO msg_ptr, title_ptr
+    invoke MessageBoxA, 0, msg_ptr, title_ptr, MB_OK
+ENDM
+
+CLAMP MACRO val, lo, hi
+    .IF val < lo
+        mov  val, lo
+    .ELSEIF val > hi
+        mov  val, hi
+    .ENDIF
+ENDM
+
 .code
 
 ; ─── 1. ActionFlowStep ────────────────────────────────────────────────────────
@@ -171,5 +188,15 @@ proc_next:
     invoke HeapFree, 0, 0, buf
     ret
 demo_composite ENDP
+
+; ─── 13. MacroCallFlowStep (user-defined macro expansion) ─────────────────────
+demo_macro PROC
+    ZERO_REG eax
+    ZERO_REG ebx
+    PRINT_MSG offset msg_body, offset msg_title
+    mov  ecx, 42
+    CLAMP ecx, 0, 100
+    ret
+demo_macro ENDP
 
 END

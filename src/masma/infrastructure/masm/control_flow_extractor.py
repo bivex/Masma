@@ -12,6 +12,7 @@ from masma.domain.control_flow import (
     IfFlowStep,
     FunctionControlFlow,
     InvokeFlowStep,
+    MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
     SwitchCaseFlow,
@@ -28,6 +29,7 @@ from masma.infrastructure.masm.support import (
     IF_RE,
     IGNORED_ACTION_DIRECTIVES,
     LABEL_RE,
+    MACRO_RE,
     PROC_RE,
     REPEAT_RE,
     UNTIL_RE,
@@ -55,6 +57,10 @@ _REP_INSTR_RE = re.compile(
 )
 _CALL_RE = re.compile(
     r"^call\s+(?P<target>[A-Za-z_.$?@][\w.$?@]*)$",
+    re.IGNORECASE,
+)
+_MACRO_CALL_RE = re.compile(
+    r"^(?P<target>[A-Za-z_.$?@][\w.$?@]*)(?:\s+(?P<args>.+))?$",
     re.IGNORECASE,
 )
 
@@ -85,18 +91,29 @@ _CMP_PREDICATES = {
 _INVERSE_OPERATORS = {"=": "≠", "≠": "=", ">": "≤", "≥": "<", "<": "≥", "≤": ">"}
 
 
+def _scan_macro_names(lines) -> frozenset[str]:
+    """Return the set of macro names (uppercased) defined anywhere in the source."""
+    names: set[str] = set()
+    for line in lines:
+        m = MACRO_RE.match(line.text)
+        if m:
+            names.add(m.group("name").upper())
+    return frozenset(names)
+
+
 class MasmControlFlowExtractor(ControlFlowExtractor):
     def extract(self, source_unit: SourceUnit) -> ControlFlowDiagram:
         lines = iter_source_lines(source_unit.content)
         procedures = scan_procedure_blocks(lines)
-        functions = tuple(_extract_procedure(procedure) for procedure in procedures)
+        macro_names = _scan_macro_names(lines)
+        functions = tuple(_extract_procedure(procedure, macro_names=macro_names) for procedure in procedures)
         return ControlFlowDiagram(
             source_location=source_unit.location,
             functions=functions,
         )
 
 
-def _extract_procedure(procedure) -> FunctionControlFlow:
+def _extract_procedure(procedure, *, macro_names: frozenset[str] = frozenset()) -> FunctionControlFlow:
     label_positions = _build_label_positions(procedure.body_lines)
     steps, _ = _parse_sequence(
         procedure.body_lines,
@@ -104,6 +121,7 @@ def _extract_procedure(procedure) -> FunctionControlFlow:
         label_positions=label_positions,
         stop_tokens=frozenset(),
         end_index=len(procedure.body_lines),
+        macro_names=macro_names,
     )
     return FunctionControlFlow(
         name=procedure.name,
@@ -120,6 +138,7 @@ def _parse_sequence(
     label_positions: dict[str, int],
     stop_tokens: frozenset[str],
     end_index: int,
+    macro_names: frozenset[str] = frozenset(),
 ):
     steps = []
     while index < end_index:
@@ -138,6 +157,7 @@ def _parse_sequence(
                 index,
                 label_positions=label_positions,
                 end_index=end_index,
+                macro_names=macro_names,
             )
             steps.append(step)
             continue
@@ -148,6 +168,7 @@ def _parse_sequence(
             label_positions=label_positions,
             stop_tokens=stop_tokens,
             end_index=end_index,
+            macro_names=macro_names,
         )
         if jump_loop is not None:
             step, index = jump_loop
@@ -170,6 +191,7 @@ def _parse_sequence(
             label_positions=label_positions,
             stop_tokens=stop_tokens,
             end_index=end_index,
+            macro_names=macro_names,
         )
         if switch_result is not None:
             step, index = switch_result
@@ -182,6 +204,7 @@ def _parse_sequence(
             label_positions=label_positions,
             stop_tokens=stop_tokens,
             end_index=end_index,
+            macro_names=macro_names,
         )
         if jump_if is not None:
             step, index = jump_if
@@ -194,6 +217,7 @@ def _parse_sequence(
                 index,
                 label_positions=label_positions,
                 end_index=end_index,
+                macro_names=macro_names,
             )
             steps.append(step)
             continue
@@ -204,6 +228,7 @@ def _parse_sequence(
                 index,
                 label_positions=label_positions,
                 end_index=end_index,
+                macro_names=macro_names,
             )
             steps.append(step)
             continue
@@ -246,13 +271,23 @@ def _parse_sequence(
             index += 1
             continue
 
+        if macro_names:
+            macro_match = _MACRO_CALL_RE.match(line.text)
+            if macro_match is not None and macro_match.group("target").upper() in macro_names:
+                target = macro_match.group("target")
+                raw_args = macro_match.group("args") or ""
+                args = tuple(compact_text(a.strip(), limit=40) for a in raw_args.split(",") if a.strip())
+                steps.append(MacroCallFlowStep(target=target, args=args))
+                index += 1
+                continue
+
         steps.append(ActionFlowStep(label=compact_text(line.text)))
         index += 1
 
     return tuple(steps), index
 
 
-def _parse_if(lines, index: int, *, label_positions, end_index: int):
+def _parse_if(lines, index: int, *, label_positions, end_index: int, macro_names: frozenset[str] = frozenset()):
     branches: list[tuple[str, tuple]] = []
     else_steps = ()
 
@@ -266,6 +301,7 @@ def _parse_if(lines, index: int, *, label_positions, end_index: int):
         label_positions=label_positions,
         stop_tokens=frozenset({"ELSEIF", "ELSE", "ENDIF"}),
         end_index=end_index,
+        macro_names=macro_names,
     )
     branches.append((condition, then_steps))
 
@@ -280,6 +316,7 @@ def _parse_if(lines, index: int, *, label_positions, end_index: int):
                 label_positions=label_positions,
                 stop_tokens=frozenset({"ELSEIF", "ELSE", "ENDIF"}),
                 end_index=end_index,
+                macro_names=macro_names,
             )
             branches.append((_condition_text(elseif_match.group("condition")), branch_steps))
             continue
@@ -292,6 +329,7 @@ def _parse_if(lines, index: int, *, label_positions, end_index: int):
                 label_positions=label_positions,
                 stop_tokens=frozenset({"ENDIF"}),
                 end_index=end_index,
+                macro_names=macro_names,
             )
         break
 
@@ -312,7 +350,7 @@ def _parse_if(lines, index: int, *, label_positions, end_index: int):
     return step, index
 
 
-def _parse_while(lines, index: int, *, label_positions, end_index: int):
+def _parse_while(lines, index: int, *, label_positions, end_index: int, macro_names: frozenset[str] = frozenset()):
     match = WHILE_RE.match(lines[index].text)
     assert match is not None
     condition = _condition_text(match.group("condition"))
@@ -323,13 +361,14 @@ def _parse_while(lines, index: int, *, label_positions, end_index: int):
         label_positions=label_positions,
         stop_tokens=frozenset({"ENDW"}),
         end_index=end_index,
+        macro_names=macro_names,
     )
     if index < len(lines) and ENDW_RE.match(lines[index].text):
         index += 1
     return WhileFlowStep(condition=condition, body_steps=body_steps), index
 
 
-def _parse_repeat(lines, index: int, *, label_positions, end_index: int):
+def _parse_repeat(lines, index: int, *, label_positions, end_index: int, macro_names: frozenset[str] = frozenset()):
     index += 1
     body_steps, index = _parse_sequence(
         lines,
@@ -337,6 +376,7 @@ def _parse_repeat(lines, index: int, *, label_positions, end_index: int):
         label_positions=label_positions,
         stop_tokens=frozenset({"UNTIL"}),
         end_index=end_index,
+        macro_names=macro_names,
     )
     condition = "until condition"
     if index < len(lines):
@@ -403,7 +443,7 @@ def _build_label_positions(lines) -> dict[str, int]:
     return positions
 
 
-def _parse_jump_loop(lines, index: int, *, label_positions, stop_tokens, end_index: int):
+def _parse_jump_loop(lines, index: int, *, label_positions, stop_tokens, end_index: int, macro_names: frozenset[str] = frozenset()):
     label_match = LABEL_RE.match(lines[index].text)
     if label_match is None:
         return None
@@ -416,6 +456,7 @@ def _parse_jump_loop(lines, index: int, *, label_positions, stop_tokens, end_ind
         label_positions=label_positions,
         stop_tokens=stop_tokens,
         end_index=end_index,
+        macro_names=macro_names,
     )
     if top_tested is not None:
         return top_tested
@@ -427,10 +468,11 @@ def _parse_jump_loop(lines, index: int, *, label_positions, stop_tokens, end_ind
         label_positions=label_positions,
         stop_tokens=stop_tokens,
         end_index=end_index,
+        macro_names=macro_names,
     )
 
 
-def _parse_top_tested_jump_loop(lines, index: int, *, label_name: str, label_positions, stop_tokens, end_index: int):
+def _parse_top_tested_jump_loop(lines, index: int, *, label_name: str, label_positions, stop_tokens, end_index: int, macro_names: frozenset[str] = frozenset()):
     compare_index, jump_index = _find_compare_and_jump(lines, index + 1, end_index, stop_tokens)
     if jump_index is None:
         return None
@@ -459,6 +501,7 @@ def _parse_top_tested_jump_loop(lines, index: int, *, label_name: str, label_pos
         label_positions=label_positions,
         stop_tokens=frozenset(),
         end_index=back_jump_index,
+        macro_names=macro_names,
     )
     if not body_steps:
         return None
@@ -476,7 +519,7 @@ def _parse_top_tested_jump_loop(lines, index: int, *, label_name: str, label_pos
     )
 
 
-def _parse_bottom_tested_jump_loop(lines, index: int, *, label_name: str, label_positions, stop_tokens, end_index: int):
+def _parse_bottom_tested_jump_loop(lines, index: int, *, label_name: str, label_positions, stop_tokens, end_index: int, macro_names: frozenset[str] = frozenset()):
     search_index = index + 1
     while search_index < end_index:
         token = _line_token(lines[search_index].text)
@@ -493,6 +536,7 @@ def _parse_bottom_tested_jump_loop(lines, index: int, *, label_name: str, label_
                 label_positions=label_positions,
                 stop_tokens=frozenset(),
                 end_index=body_end,
+                macro_names=macro_names,
             )
             if not body_steps:
                 return None
@@ -515,6 +559,7 @@ def _parse_bottom_tested_jump_loop(lines, index: int, *, label_name: str, label_
                 label_positions=label_positions,
                 stop_tokens=frozenset(),
                 end_index=search_index,
+                macro_names=macro_names,
             )
             if not body_steps:
                 return None
@@ -531,7 +576,7 @@ def _parse_bottom_tested_jump_loop(lines, index: int, *, label_name: str, label_
     return None
 
 
-def _parse_jump_if(lines, index: int, *, label_positions, stop_tokens, end_index: int):
+def _parse_jump_if(lines, index: int, *, label_positions, stop_tokens, end_index: int, macro_names: frozenset[str] = frozenset()):
     compare_index, jump_index = _find_compare_and_jump(lines, index, end_index, stop_tokens)
     if jump_index is None or jump_index != index and compare_index != index:
         return None
@@ -556,6 +601,7 @@ def _parse_jump_if(lines, index: int, *, label_positions, stop_tokens, end_index
                 label_positions=label_positions,
                 stop_tokens=frozenset(),
                 end_index=end_jump_index,
+                macro_names=macro_names,
             )
             else_steps, _ = _parse_sequence(
                 lines,
@@ -563,6 +609,7 @@ def _parse_jump_if(lines, index: int, *, label_positions, stop_tokens, end_index
                 label_positions=label_positions,
                 stop_tokens=frozenset(),
                 end_index=end_label_index,
+                macro_names=macro_names,
             )
             if then_steps or else_steps:
                 return (
@@ -584,6 +631,7 @@ def _parse_jump_if(lines, index: int, *, label_positions, stop_tokens, end_index
         label_positions=label_positions,
         stop_tokens=frozenset(),
         end_index=false_index,
+        macro_names=macro_names,
     )
     if not then_steps:
         return None
@@ -721,7 +769,7 @@ def _invert_condition_text(condition: str) -> str:
     return f"not ({condition})"
 
 
-def _parse_switch(lines, index: int, *, label_positions, stop_tokens, end_index: int):
+def _parse_switch(lines, index: int, *, label_positions, stop_tokens, end_index: int, macro_names: frozenset[str] = frozenset()):
     """Detect a cmp/je chain switch pattern starting at index.
 
     Requires >= 2 consecutive (cmp reg, val / je label) pairs with the same
@@ -829,6 +877,7 @@ def _parse_switch(lines, index: int, *, label_positions, stop_tokens, end_index:
             label_positions=label_positions,
             stop_tokens=frozenset(),
             end_index=body_end_trimmed,
+            macro_names=macro_names,
         )
         cases.append(SwitchCaseFlow(label=val, steps=body_steps))
 
