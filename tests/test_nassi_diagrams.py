@@ -472,3 +472,286 @@ copier ENDP
     # mov ecx, 16 must be absorbed — first step should be RepeatStringFlowStep
     assert isinstance(steps[0], RepeatStringFlowStep)
     assert steps[0].instruction == "movsd"
+
+
+# ── Complex macro tests ────────────────────────────────────────────────────────
+
+_COMPLEX_MACRO_SOURCE = """
+PUSH_SAVED MACRO
+    push ebx
+    push esi
+    push edi
+ENDM
+
+POP_SAVED MACRO
+    pop  edi
+    pop  esi
+    pop  ebx
+ENDM
+
+SAFE_DIV MACRO dividend, divisor, dest
+    LOCAL skip_div
+    test divisor, divisor
+    jz   skip_div
+    mov  eax, dividend
+    xor  edx, edx
+    div  divisor
+    mov  dest, eax
+skip_div:
+ENDM
+
+worker PROC a:DWORD, b:DWORD, c:DWORD
+    PUSH_SAVED
+    SAFE_DIV a, b, c
+    .WHILE eax > 0
+        SAFE_DIV eax, 2, eax
+    .ENDW
+    POP_SAVED
+    ret
+worker ENDP
+""".strip()
+
+
+def test_macro_with_local_labels_and_args_detected() -> None:
+    """SAFE_DIV has LOCAL + 3 args; PUSH_SAVED/POP_SAVED have no args."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("complex-macro"),
+        location="complex.asm",
+        content=_COMPLEX_MACRO_SOURCE,
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+
+    assert isinstance(steps[0], MacroCallFlowStep)
+    assert steps[0].target == "PUSH_SAVED"
+    assert steps[0].args == ()
+
+    assert isinstance(steps[1], MacroCallFlowStep)
+    assert steps[1].target == "SAFE_DIV"
+    assert steps[1].args == ("a", "b", "c")
+
+
+def test_macro_call_inside_while_body() -> None:
+    """SAFE_DIV inside .WHILE body is also a MacroCallFlowStep."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("macro-while"),
+        location="macro-while.asm",
+        content=_COMPLEX_MACRO_SOURCE,
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+
+    while_step = steps[2]
+    assert isinstance(while_step, WhileFlowStep)
+    assert while_step.condition == "eax > 0"
+    assert len(while_step.body_steps) == 1
+    inner = while_step.body_steps[0]
+    assert isinstance(inner, MacroCallFlowStep)
+    assert inner.target == "SAFE_DIV"
+    assert inner.args == ("eax", "2", "eax")
+
+
+def test_macro_call_inside_switch_cases() -> None:
+    """Macro call inside every switch case body."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("macro-switch"),
+        location="macro-switch.asm",
+        content="""
+LOG_ERROR MACRO code
+    push code
+    call PrintError
+    pop  eax
+ENDM
+
+dispatcher PROC code:DWORD
+    mov  eax, code
+    cmp  eax, 1
+    je   case1
+    cmp  eax, 2
+    je   case2
+    jmp  default_case
+case1:
+    LOG_ERROR 100
+    jmp  done
+case2:
+    LOG_ERROR 200
+    jmp  done
+default_case:
+    LOG_ERROR 0
+done:
+    ret
+dispatcher ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+
+    switch = steps[1]
+    assert isinstance(switch, SwitchFlowStep)
+    assert switch.expression == "eax"
+    assert len(switch.cases) == 3
+    for case in switch.cases:
+        assert len(case.steps) == 1
+        assert isinstance(case.steps[0], MacroCallFlowStep)
+        assert case.steps[0].target == "LOG_ERROR"
+
+
+def test_macro_call_inside_if_branches() -> None:
+    """Macro calls inside .IF then/else branches."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("macro-if"),
+        location="macro-if.asm",
+        content="""
+TRACE MACRO msg
+    push offset msg
+    call DebugPrint
+    pop  eax
+ENDM
+
+ASSERT_NZ MACRO reg
+    test reg, reg
+    jnz  $ + 3
+    int  3
+ENDM
+
+tricky PROC val:DWORD
+    TRACE msg1
+    mov  eax, val
+    ASSERT_NZ eax
+    .IF eax > 0
+        TRACE msg2
+        ASSERT_NZ eax
+    .ENDIF
+    ret
+tricky ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+
+    assert isinstance(steps[0], MacroCallFlowStep)
+    assert steps[0].target == "TRACE"
+    assert isinstance(steps[2], MacroCallFlowStep)
+    assert steps[2].target == "ASSERT_NZ"
+
+    if_step = steps[3]
+    assert isinstance(if_step, IfFlowStep)
+    assert isinstance(if_step.then_steps[0], MacroCallFlowStep)
+    assert if_step.then_steps[0].target == "TRACE"
+    assert isinstance(if_step.then_steps[1], MacroCallFlowStep)
+    assert if_step.then_steps[1].target == "ASSERT_NZ"
+
+
+def test_macro_defined_after_procedure_still_detected() -> None:
+    """_scan_macro_names scans all lines, so a macro defined after its call site works."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("late-macro"),
+        location="late.asm",
+        content="""
+user PROC
+    LATE_MACRO eax
+    ret
+user ENDP
+
+LATE_MACRO MACRO reg
+    inc reg
+ENDM
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], MacroCallFlowStep)
+    assert steps[0].target == "LATE_MACRO"
+    assert steps[0].args == ("eax",)
+
+
+def test_macro_name_substring_of_instruction_not_confused() -> None:
+    """'inc ecx' must stay ActionFlowStep even when macro INC_ALL is defined."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("substr"),
+        location="substr.asm",
+        content="""
+INC_ALL MACRO
+    inc eax
+    inc ebx
+ENDM
+
+fn PROC
+    inc ecx
+    INC_ALL
+    ret
+fn ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], ActionFlowStep)
+    assert steps[0].label == "inc ecx"
+    assert isinstance(steps[1], MacroCallFlowStep)
+    assert steps[1].target == "INC_ALL"
+    assert steps[1].args == ()
+
+
+def test_no_macros_in_source_produces_no_macro_steps() -> None:
+    """Without any MACRO definition, no MacroCallFlowStep should appear."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("no-macro"),
+        location="no-macro.asm",
+        content="""
+callee PROC
+    mov eax, 1
+    call SomeProc
+    ret
+callee ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert not any(isinstance(s, MacroCallFlowStep) for s in steps)
+
+
+def test_macro_visible_across_multiple_procedures() -> None:
+    """Same macro set is visible to all procedures in the file."""
+    from masma.domain.control_flow import MacroCallFlowStep
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("multi-proc"),
+        location="multi.asm",
+        content="""
+INIT MACRO
+    xor eax, eax
+    xor ebx, ebx
+ENDM
+
+proc_a PROC
+    INIT
+    inc eax
+    ret
+proc_a ENDP
+
+proc_b PROC
+    INIT
+    inc ebx
+    ret
+proc_b ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    assert len(diagram.functions) == 2
+    for fn in diagram.functions:
+        assert isinstance(fn.steps[0], MacroCallFlowStep)
+        assert fn.steps[0].target == "INIT"
