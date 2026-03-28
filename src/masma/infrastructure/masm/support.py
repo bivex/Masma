@@ -36,7 +36,7 @@ COND_ASSEMBLE_PARSE_RE = re.compile(
 ENDIF_BARE_RE = re.compile(r"^endif\b", re.IGNORECASE)
 ELSE_BARE_RE = re.compile(r"^else$", re.IGNORECASE)
 ELSEIF_BARE_RE = re.compile(r"^elseif\b\s+(.+)$", re.IGNORECASE)
-LABEL_RE = re.compile(rf"^(?P<name>{_NAME}):$", re.IGNORECASE)
+LABEL_RE = re.compile(rf"^(?P<name>{_NAME}):\s*(?P<rest>.*)$", re.IGNORECASE)
 SEGMENT_RE = re.compile(
     r"^(?P<name>\.(?:code|const|data\??)|[A-Za-z_.$?@][\w.$?@]*)\s+(?P<kind>segment)\b|^(?P<directive>\.(?:code|const|data\??))\b",
     re.IGNORECASE,

@@ -402,6 +402,19 @@ def _parse_sequence(
         label_match = LABEL_RE.match(line.text)
         if label_match is not None:
             steps.append(LabelFlowStep(name=label_match.group("name")))
+            rest = (label_match.group("rest") or "").strip()
+            if rest:
+                # Inline instruction after label — parse it as a pseudo-line
+                from masma.infrastructure.masm.support import SourceLine
+                pseudo = SourceLine(number=line.number, raw=line.raw, text=rest)
+                sub_steps, _ = _parse_sequence(
+                    (pseudo,), 0,
+                    label_positions=label_positions,
+                    stop_tokens=stop_tokens,
+                    end_index=1,
+                    macro_names=macro_names,
+                )
+                steps.extend(sub_steps)
             index += 1
             continue
 
