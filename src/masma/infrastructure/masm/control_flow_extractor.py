@@ -14,6 +14,7 @@ from masma.domain.control_flow import (
     IfFlowStep,
     IfdefFlowStep,
     FunctionControlFlow,
+    StackFlowStep,
     InvokeFlowStep,
     LabelFlowStep,
     MacroCallFlowStep,
@@ -84,6 +85,8 @@ _MACRO_CALL_RE = re.compile(
     r"^(?P<target>[A-Za-z_.$?@][\w.$?@]*)(?:\s+(?P<args>.+))?$",
     re.IGNORECASE,
 )
+_PUSH_RE = re.compile(r"^push(?:w|d|q)?\s+(?P<operand>.+)$", re.IGNORECASE)
+_POP_RE = re.compile(r"^pop(?:w|d|q)?\s+(?P<operand>.+)$", re.IGNORECASE)
 
 _CMP_PREDICATES = {
     "je": "=",
@@ -240,8 +243,10 @@ def _parse_sequence(
     stop_tokens: frozenset[str],
     end_index: int,
     macro_names: frozenset[str] = frozenset(),
+    _stack_depth: int = 0,
 ):
     steps = []
+    stack_depth = _stack_depth
     while index < end_index:
         line = lines[index]
         token = _line_token(line.text)
@@ -415,6 +420,29 @@ def _parse_sequence(
                     macro_names=macro_names,
                 )
                 steps.extend(sub_steps)
+            index += 1
+            continue
+
+        # Push / Pop — stack operations
+        push_m = _PUSH_RE.match(line.text)
+        if push_m is not None:
+            stack_depth += 1
+            steps.append(StackFlowStep(
+                direction="push",
+                operand=push_m.group("operand").strip(),
+                stack_depth=stack_depth,
+            ))
+            index += 1
+            continue
+
+        pop_m = _POP_RE.match(line.text)
+        if pop_m is not None:
+            stack_depth = max(0, stack_depth - 1)
+            steps.append(StackFlowStep(
+                direction="pop",
+                operand=pop_m.group("operand").strip(),
+                stack_depth=stack_depth,
+            ))
             index += 1
             continue
 

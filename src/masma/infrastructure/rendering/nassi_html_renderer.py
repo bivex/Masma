@@ -23,6 +23,7 @@ from masma.domain.control_flow import (
     MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
+    StackFlowStep,
     StructDefinition,
     SwitchCaseFlow,
     SwitchFlowStep,
@@ -367,6 +368,26 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-invoke  > .ns-label {{ background: rgba(166, 218, 149, 0.10); }}
       .ns-ret {{ border-left: 3px solid var(--red); }}
       .ns-ret > .ns-label {{ background: rgba(255, 147, 169, 0.08); }}
+      /* ── Stack operations ── */
+      .ns-stack {{ background: var(--surface-2); border-left: 3px solid var(--amber); }}
+      .ns-stack > .ns-label {{ background: rgba(241, 202, 122, 0.08); display: flex; align-items: center; gap: 8px; }}
+      .ns-stack-push {{ border-left-color: var(--amber); }}
+      .ns-stack-pop  {{ border-left-color: var(--teal); }}
+      .stack-icon {{ font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }}
+      .ns-stack-push .stack-icon {{ color: var(--amber); }}
+      .ns-stack-pop  .stack-icon {{ color: var(--teal); }}
+      .stack-depth {{
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--muted);
+        background: rgba(142, 155, 187, 0.12);
+        border: 1px solid rgba(142, 155, 187, 0.25);
+        border-radius: 999px;
+        padding: 1px 6px;
+        margin-left: auto;
+        flex-shrink: 0;
+      }}
       .ns-macro  {{ background: var(--surface-2); border-left: 3px solid var(--purple); }}
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
       .ns-ifdef {{ border-left: 3px dashed var(--muted); background: var(--surface); }}
@@ -956,6 +977,19 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         return f'<div class="ns-sequence ns-depth-{depth}">{rendered}</div>'
 
     def _render_step(self, step: ControlFlowStep, *, depth: int) -> str:
+        if isinstance(step, StackFlowStep):
+            icon = "↓" if step.direction == "push" else "↑"
+            css = "ns-node ns-stack ns-stack-push" if step.direction == "push" else "ns-node ns-stack ns-stack-pop"
+            depth_badge = f'<span class="stack-depth">{step.stack_depth}</span>'
+            return (
+                f'<div class="{css}">'
+                f'<div class="ns-label" aria-label="Stack {step.direction} {escape(step.operand)}">'
+                f'<span class="stack-icon">{icon}</span>'
+                f'<code class="action-text">{escape(step.direction)} {escape(step.operand)}</code>'
+                f'{depth_badge}'
+                f"</div>"
+                f"</div>"
+            )
         if isinstance(step, ActionFlowStep):
             is_ret = step.label.lower() in ("ret", "retn", "retf")
             css = "ns-node ns-action ns-ret" if is_ret else "ns-node ns-action"

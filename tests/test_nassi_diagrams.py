@@ -767,7 +767,7 @@ proc_b ENDP
 # ── IFDEF / assembly-time conditional block tests ─────────────────────────────
 
 def test_ifdef_block_produces_ifdef_flow_step() -> None:
-    from masma.domain.control_flow import IfdefFlowStep, MacroCallFlowStep
+    from masma.domain.control_flow import IfdefFlowStep, MacroCallFlowStep, StackFlowStep
     extractor = MasmControlFlowExtractor()
     source = SourceUnit(
         identifier=SourceUnitId("ifdef-basic"),
@@ -803,7 +803,10 @@ PE_OpenFile ENDP
     assert isinstance(steps[0].body_steps[0], MacroCallFlowStep)
     assert steps[0].body_steps[0].target == "PrintText"
 
-    assert steps[1].label == "push ebp"
+    assert isinstance(steps[1], StackFlowStep)
+    assert steps[1].direction == "push"
+    assert steps[1].operand == "ebp"
+    assert isinstance(steps[2], ActionFlowStep)
     assert steps[2].label == "mov ebp, esp"
 
     assert isinstance(steps[3], IfdefFlowStep)

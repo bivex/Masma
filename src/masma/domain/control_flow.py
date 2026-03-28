@@ -16,6 +16,13 @@ class ActionFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class StackFlowStep(ControlFlowStep):
+    direction: str  # "push" | "pop"
+    operand: str
+    stack_depth: int = 0  # depth AFTER this operation
+
+
+@dataclass(frozen=True, slots=True)
 class LabelFlowStep(ControlFlowStep):
     name: str  # label name without the trailing colon
 
