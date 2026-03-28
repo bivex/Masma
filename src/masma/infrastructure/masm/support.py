@@ -110,11 +110,42 @@ def extract_file_header(lines: tuple[SourceLine, ...]) -> str | None:
     return "\n".join(comment_lines) if comment_lines else None
 
 
+_COMMENT_BLOCK_START_RE = re.compile(r"^comment\s+(\S)", re.IGNORECASE)
+
+
 def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
+    """Yield source lines with comments stripped.
+
+    Handles MASM ``comment <delim>...<delim>`` multi-line comment blocks by
+    blanking out every line inside the block (including the opening/closing
+    lines).  The line numbers are preserved so diagnostics stay accurate.
+    """
     lines: list[SourceLine] = []
+    in_block = False
+    block_delim: str = ""
+
     for number, raw_line in enumerate(source_text.splitlines(), start=1):
+        stripped = raw_line.strip()
+
+        if in_block:
+            # A line that is exactly the delimiter (possibly with trailing
+            # whitespace) closes the block.
+            if stripped == block_delim:
+                in_block = False
+            # Blank the line — preserve raw for source display, text="" to skip parsing
+            lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=""))
+            continue
+
+        m = _COMMENT_BLOCK_START_RE.match(stripped)
+        if m:
+            block_delim = m.group(1)
+            in_block = True
+            lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=""))
+            continue
+
         text = _strip_comment(raw_line).strip()
         lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=text))
+
     return tuple(lines)
 
 
