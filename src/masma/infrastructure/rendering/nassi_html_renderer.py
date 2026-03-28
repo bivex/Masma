@@ -15,6 +15,8 @@ from masma.domain.control_flow import (
     ForInFlowStep,
     GuardFlowStep,
     IfFlowStep,
+    InvokeFlowStep,
+    RepeatStringFlowStep,
     RepeatWhileFlowStep,
     SwitchCaseFlow,
     SwitchFlowStep,
@@ -299,6 +301,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-switch  {{ background: var(--switch-fill); }}
       .ns-do-catch {{ background: var(--do-fill); }}
       .ns-defer   {{ background: var(--defer-fill); }}
+      .ns-invoke  {{ background: var(--surface-2); border-left: 3px solid var(--green); }}
+      .ns-invoke  > .ns-label {{ background: rgba(166, 218, 149, 0.10); }}
 
       .ns-guard   > .ns-header {{ background: var(--orange-dim); color: var(--orange); }}
       .ns-switch  > .ns-header,
@@ -643,6 +647,19 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
             )
         if isinstance(step, DeferFlowStep):
             return self._render_single_body("Defer", step.body_steps, depth=depth, css_class="ns-defer")
+        if isinstance(step, InvokeFlowStep):
+            args_text = ", ".join(step.args) if step.args else ""
+            label = f"INVOKE {step.target}" + (f"  {args_text}" if args_text else "")
+            return (
+                '<div class="ns-node ns-invoke">'
+                f'<div class="ns-label" aria-label="Invoke {escape(step.target)}">'
+                f'<code class="action-text">{escape(label)}</code>'
+                "</div>"
+                "</div>"
+            )
+        if isinstance(step, RepeatStringFlowStep):
+            header = f"{step.prefix.upper()} {step.instruction.lower()}"
+            return self._render_single_body(header, (), depth=depth, css_class="ns-repeat")
         raise TypeError(f"unsupported step type: {type(step)!r}")
 
     def _render_case(self, case: SwitchCaseFlow) -> str:

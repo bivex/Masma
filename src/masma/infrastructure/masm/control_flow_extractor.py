@@ -10,6 +10,8 @@ from masma.domain.control_flow import (
     ForInFlowStep,
     IfFlowStep,
     FunctionControlFlow,
+    InvokeFlowStep,
+    RepeatStringFlowStep,
     RepeatWhileFlowStep,
     SwitchCaseFlow,
     SwitchFlowStep,
@@ -42,6 +44,14 @@ _LOOP_INSTR_RE = re.compile(
     re.IGNORECASE,
 )
 _MOV_ECX_RE = re.compile(r"^mov\s+(?P<reg>e?cx)\s*,\s*(?P<val>.+)$", re.IGNORECASE)
+_INVOKE_RE = re.compile(
+    r"^invoke\s+(?P<target>[A-Za-z_.$?@][\w.$?@]*)(?:\s*,\s*(?P<args>.+))?$",
+    re.IGNORECASE,
+)
+_REP_INSTR_RE = re.compile(
+    r"^(?P<prefix>rep(?:e|ne|z|nz)?)\s+(?P<instr>movs[bwdq]?|stos[bwdq]?|lods[bwdq]?|scas[bwdq]?|cmps[bwdq]?)$",
+    re.IGNORECASE,
+)
 
 _CMP_PREDICATES = {
     "je": "==",
@@ -199,6 +209,24 @@ def _parse_sequence(
 
         if token == "ENDP":
             break
+
+        invoke_match = _INVOKE_RE.match(line.text)
+        if invoke_match is not None:
+            target = invoke_match.group("target")
+            raw_args = invoke_match.group("args") or ""
+            args = tuple(compact_text(a.strip(), limit=40) for a in raw_args.split(",") if a.strip())
+            steps.append(InvokeFlowStep(target=target, args=args))
+            index += 1
+            continue
+
+        rep_match = _REP_INSTR_RE.match(line.text)
+        if rep_match is not None:
+            steps.append(RepeatStringFlowStep(
+                prefix=rep_match.group("prefix").upper(),
+                instruction=rep_match.group("instr").lower(),
+            ))
+            index += 1
+            continue
 
         steps.append(ActionFlowStep(label=compact_text(line.text)))
         index += 1

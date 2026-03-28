@@ -76,6 +76,18 @@ class DeferFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class InvokeFlowStep(ControlFlowStep):
+    target: str
+    args: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class RepeatStringFlowStep(ControlFlowStep):
+    prefix: str
+    instruction: str
+
+
+@dataclass(frozen=True, slots=True)
 class FunctionControlFlow:
     name: str
     signature: str

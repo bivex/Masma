@@ -15,6 +15,8 @@ from masma.domain.control_flow import (
     ForInFlowStep,
     FunctionControlFlow,
     IfFlowStep,
+    InvokeFlowStep,
+    RepeatStringFlowStep,
     RepeatWhileFlowStep,
     SwitchFlowStep,
     WhileFlowStep,
@@ -295,3 +297,76 @@ counter ENDP
     assert isinstance(steps[0], ForInFlowStep)
     assert "10" in steps[0].header
     assert steps[0].body_steps[0].label == "dec eax"
+
+
+def test_control_flow_extractor_produces_invoke_step() -> None:
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("invoke-flow"),
+        location="invoke-flow.asm",
+        content="""
+caller PROC
+    invoke MessageBoxA, 0, offset msg, offset title, MB_OK
+    invoke ExitProcess, 0
+    ret
+caller ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert isinstance(steps[0], InvokeFlowStep)
+    assert steps[0].target == "MessageBoxA"
+    assert "MB_OK" in steps[0].args[-1]
+    assert isinstance(steps[1], InvokeFlowStep)
+    assert steps[1].target == "ExitProcess"
+    assert steps[1].args == ("0",)
+
+
+def test_control_flow_extractor_produces_repeat_string_step() -> None:
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("repstr-flow"),
+        location="repstr-flow.asm",
+        content="""
+copier PROC
+    mov ecx, 16
+    rep movsd
+    mov ecx, 32
+    repne scasb
+    ret
+copier ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    # mov ecx, 16 becomes ActionFlowStep
+    assert isinstance(steps[1], RepeatStringFlowStep)
+    assert steps[1].prefix == "REP"
+    assert steps[1].instruction == "movsd"
+    assert isinstance(steps[3], RepeatStringFlowStep)
+    assert steps[3].prefix == "REPNE"
+    assert steps[3].instruction == "scasb"
+
+
+def test_renderer_renders_invoke_and_repeat_string_steps() -> None:
+    from masma.domain.control_flow import InvokeFlowStep, RepeatStringFlowStep
+    renderer = HtmlNassiDiagramRenderer()
+    diagram = ControlFlowDiagram(
+        source_location="smoke.asm",
+        functions=(
+            FunctionControlFlow(
+                name="smoke",
+                signature="smoke PROC",
+                container=None,
+                steps=(
+                    InvokeFlowStep(target="MessageBoxA", args=("0", "offset msg", "MB_OK")),
+                    RepeatStringFlowStep(prefix="REP", instruction="movsd"),
+                ),
+            ),
+        ),
+    )
+    html = renderer.render(diagram)
+    assert "INVOKE MessageBoxA" in html
+    assert "REP movsd" in html
+    assert "ns-invoke" in html
+    assert "ns-repeat" in html
