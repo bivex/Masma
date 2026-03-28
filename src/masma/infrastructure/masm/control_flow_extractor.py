@@ -22,8 +22,10 @@ from masma.domain.control_flow import (
 from masma.domain.model import SourceUnit
 from masma.domain.ports import ControlFlowExtractor
 from masma.infrastructure.masm.support import (
+    COND_ASSEMBLE_RE,
     ELSEIF_RE,
     ELSE_RE,
+    ENDIF_BARE_RE,
     ENDIF_RE,
     ENDW_RE,
     IF_RE,
@@ -149,6 +151,10 @@ def _parse_sequence(
 
         if not line.text or _should_skip(line.text):
             index += 1
+            continue
+
+        if COND_ASSEMBLE_RE.match(line.text):
+            index = _skip_cond_assemble_block(lines, index, end_index)
             continue
 
         if IF_RE.match(line.text):
@@ -387,6 +393,24 @@ def _parse_repeat(lines, index: int, *, label_positions, end_index: int, macro_n
             condition = _prettify_condition(compact_text(f"{keyword} {suffix}".strip(), limit=100))
             index += 1
     return RepeatWhileFlowStep(condition=condition, body_steps=body_steps), index
+
+
+def _skip_cond_assemble_block(lines, index: int, end_index: int) -> int:
+    """Skip from an assembly-time IFDEF/IFNDEF/IF to its matching ENDIF.
+
+    Tracks nesting depth so inner IFDEF blocks are handled correctly.
+    Returns the index of the line after the closing ENDIF.
+    """
+    depth = 1
+    index += 1
+    while index < end_index and depth > 0:
+        text = lines[index].text
+        if COND_ASSEMBLE_RE.match(text):
+            depth += 1
+        elif ENDIF_BARE_RE.match(text):
+            depth -= 1
+        index += 1
+    return index
 
 
 def _line_token(text: str) -> str:

@@ -20,6 +20,12 @@ STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struct\b$", re.IGNORECASE)
 ENDS_RE = re.compile(rf"^(?P<name>{_NAME})\s+ends\b$", re.IGNORECASE)
 MACRO_RE = re.compile(rf"^(?P<name>{_NAME})\s+macro\b(?P<tail>.*)$", re.IGNORECASE)
 ENDM_RE = re.compile(r"^endm\b$", re.IGNORECASE)
+# Assembly-time conditional directives (no leading dot, unlike runtime .IF/.ENDIF)
+COND_ASSEMBLE_RE = re.compile(
+    r"^(?:ifdef|ifndef|ifdif|ifdifi|ifidn|ifidni|ifb|ifnb|if)\b",
+    re.IGNORECASE,
+)
+ENDIF_BARE_RE = re.compile(r"^endif\b", re.IGNORECASE)
 LABEL_RE = re.compile(rf"^(?P<name>{_NAME}):$", re.IGNORECASE)
 SEGMENT_RE = re.compile(
     r"^(?P<name>\.(?:code|const|data\??)|[A-Za-z_.$?@][\w.$?@]*)\s+(?P<kind>segment)\b|^(?P<directive>\.(?:code|const|data\??))\b",

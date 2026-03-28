@@ -755,3 +755,144 @@ proc_b ENDP
     for fn in diagram.functions:
         assert isinstance(fn.steps[0], MacroCallFlowStep)
         assert fn.steps[0].target == "INIT"
+
+
+# ── IFDEF / assembly-time conditional block tests ─────────────────────────────
+
+def test_ifdef_block_is_fully_skipped() -> None:
+    """IFDEF...ENDIF block — directive line and body both disappear."""
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("ifdef-basic"),
+        location="ifdef.asm",
+        content="""
+PrintText MACRO msg
+    push offset msg
+    call _DebugPrint
+ENDM
+
+PE_OpenFile PROC
+    IFDEF DEBUG32
+    PrintText 'PE_OpenFile'
+    ENDIF
+    push ebp
+    mov  ebp, esp
+    IFDEF DEBUG32
+    PrintText 'allocating'
+    ENDIF
+    sub  esp, 40h
+    ret
+PE_OpenFile ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    labels = [s.label for s in steps]
+    assert labels == ["push ebp", "mov ebp, esp", "sub esp, 40h", "ret"]
+
+
+def test_ifndef_block_is_fully_skipped() -> None:
+    """IFNDEF...ENDIF block is also skipped."""
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("ifndef-basic"),
+        location="ifndef.asm",
+        content="""
+fn PROC
+    IFNDEF RELEASE
+    int  3
+    ENDIF
+    mov  eax, 1
+    ret
+fn ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert len(steps) == 2
+    assert steps[0].label == "mov eax, 1"
+    assert steps[1].label == "ret"
+
+
+def test_nested_ifdef_blocks_handled_correctly() -> None:
+    """Nested IFDEF inside IFDEF: depth tracking must consume the inner ENDIF too."""
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("ifdef-nested"),
+        location="nested.asm",
+        content="""
+fn PROC
+    IFDEF OUTER
+        mov  eax, 1
+        IFDEF INNER
+            mov  ebx, 2
+        ENDIF
+        mov  ecx, 3
+    ENDIF
+    mov  edx, 4
+    ret
+fn ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    # Only the instructions outside both IFDEFs survive
+    assert len(steps) == 2
+    assert steps[0].label == "mov edx, 4"
+    assert steps[1].label == "ret"
+
+
+def test_ifdef_before_and_after_real_flow() -> None:
+    """Debug prints around a .IF block don't corrupt structured flow extraction."""
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("ifdef-around-if"),
+        location="mixed.asm",
+        content="""
+fn PROC val:DWORD
+    IFDEF DEBUG32
+    push eax
+    ENDIF
+    mov  eax, val
+    .IF eax > 0
+        inc  eax
+    .ENDIF
+    IFDEF DEBUG32
+    pop  eax
+    ENDIF
+    ret
+fn ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert len(steps) == 3
+    assert isinstance(steps[0], ActionFlowStep)
+    assert steps[0].label == "mov eax, val"
+    assert isinstance(steps[1], IfFlowStep)
+    assert steps[1].condition == "eax > 0"
+    assert isinstance(steps[2], ActionFlowStep)
+    assert steps[2].label == "ret"
+
+
+def test_if_bare_conditional_assembly_skipped() -> None:
+    """Bare IF (assembly-time, no dot) is also skipped, not confused with runtime .IF."""
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("if-bare"),
+        location="if-bare.asm",
+        content="""
+fn PROC
+    IF @WordSize EQ 4
+    mov  eax, 0
+    ENDIF
+    inc  ebx
+    ret
+fn ENDP
+""".strip(),
+    )
+    diagram = extractor.extract(source)
+    steps = diagram.functions[0].steps
+    assert len(steps) == 2
+    assert steps[0].label == "inc ebx"
+    assert steps[1].label == "ret"
