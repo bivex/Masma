@@ -138,6 +138,14 @@ class RepeatStringFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class JumpFlowStep(ControlFlowStep):
+    """An unconditional or conditional jump that didn't form a structured block."""
+    target: str          # destination label
+    condition: str | None  # None → unconditional jmp; string → e.g. "je", "jnz"
+    source: str          # full original line text
+
+
+@dataclass(frozen=True, slots=True)
 class FunctionControlFlow:
     name: str
     signature: str

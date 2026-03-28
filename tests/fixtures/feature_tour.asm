@@ -252,7 +252,23 @@ teardown_phase:
     ret
 demo_label ENDP
 
-; ─── 16. LocalDeclFlowStep (stack-frame local variable aliases) ───────────────
+; ─── 16. JumpFlowStep (unstructured goto / conditional branch) ────────────────
+; Jumps that don't form a recognized if/while/switch block.
+demo_jumps PROC
+    mov  eax, 0
+    cmp  eax, 0
+    jz   skip_block          ; conditional branch — yellow
+    mov  ebx, 1
+skip_block:
+    cmp  eax, 10
+    jge  end_proc            ; conditional branch — yellow
+    inc  eax
+    jmp  skip_block          ; unconditional goto — red
+end_proc:
+    ret
+demo_jumps ENDP
+
+; ─── 17. LocalDeclFlowStep (stack-frame local variable aliases) ───────────────
 ; EQU aliases for bp-relative stack slots — compiler/assembler generated.
 demo_locals PROC
 AllocFlags  equ byte ptr [bp - 2]

@@ -19,6 +19,7 @@ from masma.domain.control_flow import (
     IfdefFlowStep,
     IfFlowStep,
     InvokeFlowStep,
+    JumpFlowStep,
     LabelFlowStep,
     LocalDeclFlowStep,
     MacroCallFlowStep,
@@ -395,6 +396,15 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .local-decl-icon {{ font-size: 12px; color: var(--muted); width: 16px; text-align: center; }}
       .local-decl-name {{ font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }}
       .local-decl-type {{ font-family: var(--mono); font-size: 11px; color: var(--muted); }}
+      /* ── Jumps (unstructured goto / conditional branch) ── */
+      .ns-jump {{ display: flex; align-items: stretch; }}
+      .ns-jump > .ns-label {{ display: flex; align-items: center; gap: 6px; }}
+      .ns-jump-unconditional {{ border-left: 3px solid var(--red, #f47067); background: rgba(244, 112, 103, 0.07); }}
+      .ns-jump-conditional   {{ border-left: 3px solid var(--yellow, #e5c07b); background: rgba(229, 192, 123, 0.07); }}
+      .jump-icon {{ font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }}
+      .ns-jump-unconditional .jump-icon {{ color: var(--red, #f47067); }}
+      .ns-jump-conditional   .jump-icon {{ color: var(--yellow, #e5c07b); }}
+      .jump-text {{ font-family: var(--mono); font-size: 12px; color: var(--text); }}
       .ns-macro  {{ background: var(--surface-2); border-left: 3px solid var(--purple); }}
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
       .ns-ifdef {{ border-left: 3px dashed var(--muted); background: var(--surface); }}
@@ -1004,6 +1014,25 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 f'<span class="local-decl-icon">≡</span>'
                 f'<code class="local-decl-name">{escape(step.name)}</code>'
                 f'<code class="local-decl-type">{escape(step.type_info)}</code>'
+                "</div>"
+                "</div>"
+            )
+        if isinstance(step, JumpFlowStep):
+            if step.condition is None:
+                css = "ns-node ns-jump ns-jump-unconditional"
+                icon = "⇒"
+                label_text = f"goto {escape(step.target)}"
+                aria = f"Unconditional jump to {escape(step.target)}"
+            else:
+                css = "ns-node ns-jump ns-jump-conditional"
+                icon = "↪"
+                label_text = f"{escape(step.condition)} {escape(step.target)}"
+                aria = f"Conditional jump {escape(step.condition)} to {escape(step.target)}"
+            return (
+                f'<div class="{css}">'
+                f'<div class="ns-label" aria-label="{aria}">'
+                f'<span class="jump-icon">{icon}</span>'
+                f'<code class="jump-text">{label_text}</code>'
                 "</div>"
                 "</div>"
             )

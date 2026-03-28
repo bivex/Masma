@@ -17,6 +17,7 @@ from masma.domain.control_flow import (
     StackFlowStep,
     InvokeFlowStep,
     LabelFlowStep,
+    JumpFlowStep,
     LocalDeclFlowStep,
     MacroCallFlowStep,
     RepeatStringFlowStep,
@@ -469,6 +470,27 @@ def _parse_sequence(
                 ))
                 index += 1
                 continue
+
+        # Unstructured jumps — didn't form if/while/switch above
+        jmp_m = _JMP_RE.match(line.text)
+        if jmp_m is not None:
+            steps.append(JumpFlowStep(
+                target=jmp_m.group("label"),
+                condition=None,
+                source=compact_text(line.text),
+            ))
+            index += 1
+            continue
+
+        cj_m = _COND_JUMP_RE.match(line.text)
+        if cj_m is not None:
+            steps.append(JumpFlowStep(
+                target=cj_m.group("label"),
+                condition=cj_m.group("op").lower(),
+                source=compact_text(line.text),
+            ))
+            index += 1
+            continue
 
         steps.append(ActionFlowStep(label=compact_text(line.text)))
         index += 1
