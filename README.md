@@ -10,7 +10,7 @@ Today the system supports:
 * parsing a directory recursively and ignoring non-MASM files
 * extracting a stable structural model with includes, constants, variables, segments, structs, macros, procedures, and labels
 * reporting syntax diagnostics for unbalanced `PROC/ENDP`, `STRUCT/ENDS`, `MACRO/ENDM`, and structured flow directives
-* extracting structured control flow from MASM procedures that use `.IF/.ELSEIF/.ELSE/.ENDIF`, `.WHILE/.ENDW`, and `.REPEAT/.UNTIL`
+* extracting structured control flow from MASM procedures that use `.IF/.ELSEIF/.ELSE/.ENDIF`, `.WHILE/.ENDW`, `.REPEAT/.UNTIL`, recovered `cmp/je` switch chains, and MASM `loop`-counted loops
 * generating HTML Nassi-Shneiderman diagrams for one MASM file or for a directory bundle
 
 ## Architecture
@@ -83,12 +83,13 @@ Masma currently understands these structural and flow-level MASM constructs:
 * `.WHILE/.ENDW`
 * `.REPEAT/.UNTIL` and `.REPEAT/.UNTILCXZ`
 * heuristic recovery of common jump-based flow:
-  `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, and label-based `jcc/jmp` loop patterns
+  `cmp/test + jcc` for `if`, `cmp/test + jcc + jmp` for `if/else`, label-based `jcc/jmp` loop patterns,
+  2+ `cmp reg, val` + `je label` chains for `switch`, and `loop label` for ECX-counted loops
 * an ANTLR-backed structural parser derived from the upstream `grammars-v4` MASM grammar and patched for Masma's working subset
 
 ### Control flow step types
 
-The domain and renderer define the following step types. Only the four marked **implemented** are produced by the MASM extractor today; the rest exist in the domain model and renderer but have no extractor backend.
+The domain and renderer define the following step types. Six are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
 
 | Step type | Status | Notes |
 |---|---|---|
