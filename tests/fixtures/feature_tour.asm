@@ -261,4 +261,28 @@ demo_macro PROC
     ret
 demo_macro ENDP
 
+; ─── 17. Segments — procs in named and standard segments ──────────────────────
+INIT_SEG SEGMENT
+demo_init PROC
+    ; runs before main code — a typical init-segment pattern
+    xor  eax, eax
+    mov  [init_flag], eax
+    ret
+demo_init ENDP
+INIT_SEG ENDS
+
+PAGE_SEG SEGMENT
+demo_page PROC
+    push ebp
+    mov  ebp, esp
+    .IF eax == 0
+        call demo_init
+    .ELSE
+        inc  eax
+    .ENDIF
+    pop  ebp
+    ret
+demo_page ENDP
+PAGE_SEG ENDS
+
 END
