@@ -5,8 +5,9 @@
  * The upstream grammar is educational and intentionally narrow. This patched
  * variant broadens support for modern MASM source layout used by Masma:
  * `.code/.data/.data?/.const`, `include/includelib`, `PROC/ENDP`,
- * `STRUCT/ENDS`, `MACRO/ENDM`, labels, data declarations, structured
- * directives, and free-form instruction lines.
+ * `STRUCT/ENDS`, `UNION/ENDS`, `MACRO/ENDM`, `TYPEDEF`, labels,
+ * data declarations, structured directives, conditional-assembly directives,
+ * macro-loop directives (FOR/IRP/REPT/WHILE), and free-form instruction lines.
  */
 grammar Masm;
 
@@ -21,12 +22,18 @@ line
 statement
     : includeStmt
     | equStmt
+    | typedefStmt
     | namedSegmentStmt
     | simpleSegmentStmt
     | structStartStmt
+    | unionStartStmt
     | structEndStmt
     | macroStartStmt
     | endmStmt
+    | condAssembleStmt
+    | condAssembleElse
+    | condAssembleEndif
+    | macroLoopStmt
     | procStartStmt
     | procEndStmt
     | labelStmt
@@ -44,6 +51,10 @@ equStmt
     : identifier EQU lineItems?
     ;
 
+typedefStmt
+    : identifier TYPEDEF lineItems?
+    ;
+
 namedSegmentStmt
     : identifier SEGMENT lineItems?
     ;
@@ -59,8 +70,13 @@ structStartStmt
     : identifier STRUCT lineItems?
     ;
 
+unionStartStmt
+    : identifier UNION lineItems?
+    ;
+
 structEndStmt
     : identifier ENDS
+    | ENDS
     ;
 
 macroStartStmt
@@ -69,6 +85,22 @@ macroStartStmt
 
 endmStmt
     : ENDM
+    ;
+
+condAssembleStmt
+    : (IFDEF | IFNDEF | IF1 | IF2 | IF_BARE | ELSEIF_BARE) lineItems?
+    ;
+
+condAssembleElse
+    : ELSE_BARE
+    ;
+
+condAssembleEndif
+    : ENDIF_BARE
+    ;
+
+macroLoopStmt
+    : (FOR | FORC | IRP | IRPC | REPT | WHILE_BARE) lineItems?
     ;
 
 procStartStmt
@@ -118,14 +150,35 @@ identifier
 INCLUDE         : I N C L U D E ;
 INCLUDELIB      : I N C L U D E L I B ;
 EQU             : E Q U ;
+TYPEDEF         : T Y P E D E F ;
 PROC            : P R O C ;
 ENDP            : E N D P ;
 STRUCT          : S T R U C T ;
+UNION           : U N I O N ;
 ENDS            : E N D S ;
 MACRO           : M A C R O ;
 ENDM            : E N D M ;
 END             : E N D ;
 SEGMENT         : S E G M E N T ;
+
+// Conditional assembly directives (bare, no dot)
+IFDEF           : I F D E F ;
+IFNDEF          : I F N D E F ;
+IF1             : I F '1' ;
+IF2             : I F '2' ;
+IF_BARE         : I F ;
+ELSEIF_BARE     : E L S E I F ;
+ELSE_BARE       : E L S E ;
+ENDIF_BARE      : E N D I F ;
+
+// Macro-loop directives (bare, end with ENDM)
+FOR             : F O R ;
+FORC            : F O R C ;
+IRP             : I R P ;
+IRPC            : I R P C ;
+REPT            : R E P T ;
+WHILE_BARE      : W H I L E ;
+
 DATA_SEG        : '.' D A T A ;
 DATAQ_SEG       : '.' D A T A '?' ;
 CONST_SEG       : '.' C O N S T ;
