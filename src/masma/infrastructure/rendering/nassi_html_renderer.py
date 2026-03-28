@@ -658,8 +658,12 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 "</div>"
             )
         if isinstance(step, RepeatStringFlowStep):
-            header = f"{step.prefix.upper()} {step.instruction.lower()}"
-            return self._render_single_body(header, (), depth=depth, css_class="ns-repeat")
+            label = f"{step.prefix.upper()} {step.instruction.lower()}"
+            return (
+                '<div class="ns-node ns-repeat">'
+                f'<div class="ns-header" aria-label="{escape(label)}">{escape(label)}</div>'
+                "</div>"
+            )
         raise TypeError(f"unsupported step type: {type(step)!r}")
 
     def _render_case(self, case: SwitchCaseFlow) -> str:
