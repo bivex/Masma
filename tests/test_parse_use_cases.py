@@ -51,8 +51,8 @@ def test_parse_directory_returns_report_for_all_masm_sources() -> None:
     service = _build_service()
     report = service.parse_directory(ParseDirectoryCommand(root_path=str(ROOT / "tests" / "fixtures")))
 
-    assert report.summary.source_count == 5
-    assert len(report.sources) == 5
+    assert report.summary.source_count == 6
+    assert len(report.sources) == 6
 
 
 def test_parse_file_reports_unclosed_structured_block_as_diagnostic() -> None:

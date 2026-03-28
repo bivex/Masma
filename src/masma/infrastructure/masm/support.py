@@ -18,6 +18,7 @@ PROC_RE = re.compile(rf"^(?P<name>{_NAME})\s+proc\b(?P<tail>.*)$", re.IGNORECASE
 ENDP_RE = re.compile(rf"^(?P<name>{_NAME})\s+endp\b$", re.IGNORECASE)
 STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struct\b$", re.IGNORECASE)
 ENDS_RE = re.compile(rf"^(?P<name>{_NAME})\s+ends\b$", re.IGNORECASE)
+UNION_RE = re.compile(rf"^(?P<name>{_NAME})\s+union\b", re.IGNORECASE)
 MACRO_RE = re.compile(rf"^(?P<name>{_NAME})\s+macro\b(?P<tail>.*)$", re.IGNORECASE)
 ENDM_RE = re.compile(r"^endm\b$", re.IGNORECASE)
 # Assembly-time conditional directives (no leading dot, unlike runtime .IF/.ENDIF)
@@ -197,9 +198,13 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
             stack.append(("STRUCT", struct_match.group("name"), line.number))
             continue
 
+        if union_match := UNION_RE.match(line.text):
+            stack.append(("STRUCT", union_match.group("name"), line.number))
+            continue
+
         if ends_match := ENDS_RE.match(line.text):
             if not stack or stack[-1][0] != "STRUCT":
-                diagnostics.append(_error("ENDS without matching STRUCT", line.number))
+                diagnostics.append(_error("ENDS without matching STRUCT/UNION", line.number))
                 continue
             _, expected_name, _ = stack.pop()
             if expected_name.lower() != ends_match.group("name").lower():
@@ -215,8 +220,15 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
             stack.append(("MACRO", macro_match.group("name"), line.number))
             continue
 
+        # Macro-loop directives (FORC/FOR/IRP/IRPC/REPT/WHILE) also close with ENDM
+        # % prefix allowed (e.g. "% FOR arg, <list>")
+        macro_loop_m = re.match(r"^%?\s*(forc|for\b|irp|irpc|rept|while)\b", line.text, re.IGNORECASE)
+        if macro_loop_m:
+            stack.append(("MACRO_LOOP", macro_loop_m.group(1).upper(), line.number))
+            continue
+
         if ENDM_RE.match(line.text):
-            if not stack or stack[-1][0] != "MACRO":
+            if not stack or stack[-1][0] not in ("MACRO", "MACRO_LOOP"):
                 diagnostics.append(_error("ENDM without matching MACRO", line.number))
                 continue
             stack.pop()
@@ -350,14 +362,19 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
     for line in lines:
         if current_name is None:
             m = STRUCT_RE.match(line.text)
+            u = UNION_RE.match(line.text)
             if m:
                 current_name = m.group("name")
                 current_line = line.number
                 fields = []
                 depth = 0
-            # Also match UNION as a struct-like container
+            elif u:
+                current_name = u.group("name")
+                current_line = line.number
+                fields = []
+                depth = 0
             elif _BARE_STRUCT_RE.match(line.text):
-                depth = 1
+                pass  # bare 'struct' — skip, only relevant when nested
             continue
 
         # Nested struct/union inside current struct — track depth
@@ -420,6 +437,13 @@ def scan_macro_blocks(lines: tuple[SourceLine, ...]) -> tuple[MacroBlock, ...]:
             continue
 
         if MACRO_RE.match(line.text):
+            depth += 1
+            body.append(line)
+            continue
+
+        # FORC/FOR/IRP/IRPC/REPT/WHILE macro-loop directives also end with ENDM
+        # % prefix is used for macro expansion expressions (e.g. "% FOR arg, <list>")
+        if re.match(r"^%?\s*(forc|for\b|irp|irpc|rept|while)\b", line.text, re.IGNORECASE):
             depth += 1
             body.append(line)
             continue
