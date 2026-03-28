@@ -26,6 +26,12 @@ CLAMP MACRO val, lo, hi
     .ENDIF
 ENDM
 
+.data
+    msg_title   db "Masma", 0
+    msg_body    db "Feature tour", 0
+    src_buf     dd 16 dup(0)
+    dst_buf     dd 16 dup(0)
+
 .code
 
 ; ─── 1. ActionFlowStep ────────────────────────────────────────────────────────
