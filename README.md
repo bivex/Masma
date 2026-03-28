@@ -96,20 +96,20 @@ Masma currently understands these structural and flow-level MASM constructs:
 
 The domain and renderer define the following step types. Nine are fully produced by the MASM extractor; three have no clean structural mapping in MASM assembly.
 
-| Step type | Status | Notes |
-|---|---|---|
-| `ActionFlowStep` | implemented | straight-line instruction blocks |
-| `IfFlowStep` | implemented | `.IF/.ELSEIF/.ELSE/.ENDIF` and recovered `cmp/jcc` |
-| `WhileFlowStep` | implemented | `.WHILE/.ENDW` |
-| `RepeatWhileFlowStep` | implemented | `.REPEAT/.UNTIL` / `.REPEAT/.UNTILCXZ` |
-| `SwitchFlowStep` / `SwitchCaseFlow` | implemented | 2+ `cmp reg, val` + `je label` chains with same register |
-| `ForInFlowStep` | implemented | MASM `loop` instruction (decrements ECX, jumps if non-zero) |
-| `InvokeFlowStep` | implemented | MASM `INVOKE proc, args` macro call |
-| `CallFlowStep` | implemented | direct `call proc` instruction (not indirect `call [reg]`) |
-| `RepeatStringFlowStep` | implemented | `REP`/`REPE`/`REPNE` string instructions (`rep movsd`, `rep stosb`, etc.) |
-| `GuardFlowStep` | not applicable | early-exit guard has no clean linear mapping in MASM |
-| `DoCatchFlowStep` / `CatchClauseFlow` | not applicable | structured exception handling has no natural MASM directive equivalent |
-| `DeferFlowStep` | not applicable | deferred cleanup has no natural MASM directive equivalent |
+| Step type | Symbol | Source | Notes |
+|---|---|---|---|
+| `ActionFlowStep` | *(plain block)* | any instruction | straight-line instructions; `ret`/`retn` highlighted in red |
+| `IfFlowStep` | triangle split | structured `.IF/.ELSEIF/.ELSE/.ENDIF`; recovered `cmp/test + jcc` | nested depth shown with circled-number badge ①②… |
+| `WhileFlowStep` | ↻ | structured `.WHILE/.ENDW`; recovered top-tested `cmp/jcc + jmp` loop | |
+| `RepeatWhileFlowStep` | ↺ | structured `.REPEAT/.UNTIL` / `.REPEAT/.UNTILCXZ`; recovered bottom-tested `jcc` loop | header `↺ Repeat`, footer `↺ UNTIL …` or `↺ While …` |
+| `SwitchFlowStep` / `SwitchCaseFlow` | ⎇ | recovered 2+ `cmp reg, val` + `je label` chains with same register | |
+| `ForInFlowStep` | ∀ | MASM `loop label` instruction (decrements ECX, jumps if non-zero) | |
+| `InvokeFlowStep` | ⇒ | MASM `INVOKE proc, args` macro call | |
+| `CallFlowStep` | ⇒ | direct `call proc` (not indirect `call [reg]`) | indirect calls stay as `ActionFlowStep` |
+| `RepeatStringFlowStep` | ⊛ | `REP`/`REPE`/`REPNE` string instructions; absorbs preceding `mov ecx, n` | `rep movsd`, `repne scasb`, etc. |
+| `GuardFlowStep` | — | not applicable | early-exit guard has no clean linear mapping in MASM |
+| `DoCatchFlowStep` / `CatchClauseFlow` | — | not applicable | structured exception handling has no natural MASM directive equivalent |
+| `DeferFlowStep` | — | not applicable | deferred cleanup has no natural MASM directive equivalent |
 
 ## Constraints and honesty
 
