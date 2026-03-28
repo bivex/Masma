@@ -25,6 +25,8 @@ from masma.infrastructure.masm.support import (
     INCLUDE_RE,
     LABEL_RE,
     MACRO_RE,
+    CEND_RE,
+    CPROC_RE,
     PROC_RE,
     STRUCT_RE,
     VARIABLE_RE,
@@ -350,7 +352,7 @@ def _extract_structural_elements(lines):
             )
             continue
 
-        if proc_match := PROC_RE.match(line.text):
+        if proc_match := (PROC_RE.match(line.text) or CPROC_RE.match(line.text)):
             current_procedure = proc_match.group("name")
             yield StructuralElement(
                 kind=StructuralElementKind.PROCEDURE,
@@ -362,7 +364,7 @@ def _extract_structural_elements(lines):
             )
             continue
 
-        if line.text.lower().endswith(" endp"):
+        if line.text.lower().endswith(" endp") or CEND_RE.match(line.text):
             current_procedure = None
             continue
 

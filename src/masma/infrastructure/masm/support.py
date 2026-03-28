@@ -16,6 +16,9 @@ INCLUDE_RE = re.compile(r"^(?P<kind>include|includelib)\s+(?P<target>.+)$", re.I
 EQU_RE = re.compile(rf"^(?P<name>{_NAME})\s+equ\b(?P<value>.*)$", re.IGNORECASE)
 PROC_RE = re.compile(rf"^(?P<name>{_NAME})\s+proc\b(?P<tail>.*)$", re.IGNORECASE)
 ENDP_RE = re.compile(rf"^(?P<name>{_NAME})\s+endp\b$", re.IGNORECASE)
+# cmacros.inc-style procedure markers used in older MASM / NT sources
+CPROC_RE = re.compile(rf"^cProc\s+(?P<name>{_NAME})\b(?P<tail>.*)$", re.IGNORECASE)
+CEND_RE = re.compile(r"^cEnd\b", re.IGNORECASE)
 STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struct\b$", re.IGNORECASE)
 ENDS_RE = re.compile(rf"^(?P<name>{_NAME})\s+ends\b$", re.IGNORECASE)
 UNION_RE = re.compile(rf"^(?P<name>{_NAME})\s+union\b", re.IGNORECASE)
@@ -180,6 +183,10 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
             stack.append(("PROC", proc_match.group("name"), line.number))
             continue
 
+        if cproc_match := CPROC_RE.match(line.text):
+            stack.append(("PROC", cproc_match.group("name"), line.number))
+            continue
+
         if endp_match := ENDP_RE.match(line.text):
             if not stack or stack[-1][0] != "PROC":
                 diagnostics.append(_error("ENDP without matching PROC", line.number))
@@ -192,6 +199,13 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
                         line.number,
                     )
                 )
+            continue
+
+        if CEND_RE.match(line.text):
+            if not stack or stack[-1][0] != "PROC":
+                diagnostics.append(_error("cEnd without matching cProc", line.number))
+                continue
+            stack.pop()
             continue
 
         seg_m = SEGMENT_RE.match(line.text)
@@ -301,7 +315,7 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
             current_segment = seg
 
         if current_name is None:
-            proc_match = PROC_RE.match(line.text)
+            proc_match = PROC_RE.match(line.text) or CPROC_RE.match(line.text)
             if proc_match is None:
                 continue
             current_name = proc_match.group("name")
@@ -312,6 +326,22 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
 
         endp_match = ENDP_RE.match(line.text)
         if endp_match and endp_match.group("name").lower() == current_name.lower():
+            procedures.append(
+                ProcedureBlock(
+                    name=current_name,
+                    signature=current_signature,
+                    line=current_line,
+                    body_lines=tuple(body),
+                    segment=current_segment,
+                )
+            )
+            current_name = None
+            current_signature = ""
+            current_line = 0
+            body = []
+            continue
+
+        if CEND_RE.match(line.text):
             procedures.append(
                 ProcedureBlock(
                     name=current_name,
