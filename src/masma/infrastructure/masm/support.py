@@ -378,11 +378,11 @@ def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
             continue
 
         # Nested struct/union inside current struct — track depth
-        if STRUCT_RE.match(line.text) or _BARE_STRUCT_RE.match(line.text):
+        if STRUCT_RE.match(line.text) or UNION_RE.match(line.text) or _BARE_STRUCT_RE.match(line.text):
             depth += 1
             continue
 
-        if ENDS_RE.match(line.text) and depth > 0:
+        if (ENDS_RE.match(line.text) or _BARE_ENDS_RE.match(line.text)) and depth > 0:
             depth -= 1
             continue
 

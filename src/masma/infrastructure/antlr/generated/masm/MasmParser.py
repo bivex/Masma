@@ -1,4 +1,4 @@
-# Generated from /Volumes/External/Code/Masma/resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
+# Generated from resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -10,59 +10,77 @@ else:
 
 def serializedATN():
     return [
-        4,1,42,156,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,58,199,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
-        7,20,2,21,7,21,2,22,7,22,1,0,1,0,5,0,49,8,0,10,0,12,0,52,9,0,1,0,
-        1,0,1,1,3,1,57,8,1,1,1,4,1,60,8,1,11,1,12,1,61,1,2,1,2,1,2,1,2,1,
-        2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,3,2,79,8,2,1,3,1,3,3,3,
-        83,8,3,1,4,1,4,1,4,3,4,88,8,4,1,5,1,5,1,5,3,5,93,8,5,1,6,1,6,1,7,
-        1,7,1,7,3,7,100,8,7,1,8,1,8,1,8,1,9,1,9,1,9,3,9,108,8,9,1,10,1,10,
-        1,11,1,11,1,11,3,11,115,8,11,1,12,1,12,1,12,1,13,1,13,1,13,1,14,
-        1,14,1,14,3,14,126,8,14,1,15,1,15,3,15,130,8,15,1,16,1,16,3,16,134,
-        8,16,1,17,1,17,1,18,4,18,139,8,18,11,18,12,18,140,1,19,1,19,1,19,
-        1,19,1,19,3,19,148,8,19,1,20,1,20,1,21,1,21,1,22,1,22,1,22,0,0,23,
-        0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,
-        0,4,1,0,1,2,1,0,12,15,1,0,16,24,1,0,25,37,164,0,50,1,0,0,0,2,56,
-        1,0,0,0,4,78,1,0,0,0,6,80,1,0,0,0,8,84,1,0,0,0,10,89,1,0,0,0,12,
-        94,1,0,0,0,14,96,1,0,0,0,16,101,1,0,0,0,18,104,1,0,0,0,20,109,1,
-        0,0,0,22,111,1,0,0,0,24,116,1,0,0,0,26,119,1,0,0,0,28,122,1,0,0,
-        0,30,127,1,0,0,0,32,131,1,0,0,0,34,135,1,0,0,0,36,138,1,0,0,0,38,
-        147,1,0,0,0,40,149,1,0,0,0,42,151,1,0,0,0,44,153,1,0,0,0,46,49,3,
-        2,1,0,47,49,5,42,0,0,48,46,1,0,0,0,48,47,1,0,0,0,49,52,1,0,0,0,50,
-        48,1,0,0,0,50,51,1,0,0,0,51,53,1,0,0,0,52,50,1,0,0,0,53,54,5,0,0,
-        1,54,1,1,0,0,0,55,57,3,4,2,0,56,55,1,0,0,0,56,57,1,0,0,0,57,59,1,
-        0,0,0,58,60,5,42,0,0,59,58,1,0,0,0,60,61,1,0,0,0,61,59,1,0,0,0,61,
-        62,1,0,0,0,62,3,1,0,0,0,63,79,3,6,3,0,64,79,3,8,4,0,65,79,3,10,5,
-        0,66,79,3,12,6,0,67,79,3,14,7,0,68,79,3,16,8,0,69,79,3,18,9,0,70,
-        79,3,20,10,0,71,79,3,22,11,0,72,79,3,24,12,0,73,79,3,26,13,0,74,
-        79,3,28,14,0,75,79,3,30,15,0,76,79,3,32,16,0,77,79,3,34,17,0,78,
-        63,1,0,0,0,78,64,1,0,0,0,78,65,1,0,0,0,78,66,1,0,0,0,78,67,1,0,0,
-        0,78,68,1,0,0,0,78,69,1,0,0,0,78,70,1,0,0,0,78,71,1,0,0,0,78,72,
-        1,0,0,0,78,73,1,0,0,0,78,74,1,0,0,0,78,75,1,0,0,0,78,76,1,0,0,0,
-        78,77,1,0,0,0,79,5,1,0,0,0,80,82,7,0,0,0,81,83,3,36,18,0,82,81,1,
-        0,0,0,82,83,1,0,0,0,83,7,1,0,0,0,84,85,3,40,20,0,85,87,5,3,0,0,86,
-        88,3,36,18,0,87,86,1,0,0,0,87,88,1,0,0,0,88,9,1,0,0,0,89,90,3,40,
-        20,0,90,92,5,11,0,0,91,93,3,36,18,0,92,91,1,0,0,0,92,93,1,0,0,0,
-        93,11,1,0,0,0,94,95,7,1,0,0,95,13,1,0,0,0,96,97,3,40,20,0,97,99,
-        5,6,0,0,98,100,3,36,18,0,99,98,1,0,0,0,99,100,1,0,0,0,100,15,1,0,
-        0,0,101,102,3,40,20,0,102,103,5,7,0,0,103,17,1,0,0,0,104,105,3,40,
-        20,0,105,107,5,8,0,0,106,108,3,36,18,0,107,106,1,0,0,0,107,108,1,
-        0,0,0,108,19,1,0,0,0,109,110,5,9,0,0,110,21,1,0,0,0,111,112,3,40,
-        20,0,112,114,5,4,0,0,113,115,3,36,18,0,114,113,1,0,0,0,114,115,1,
-        0,0,0,115,23,1,0,0,0,116,117,3,40,20,0,117,118,5,5,0,0,118,25,1,
-        0,0,0,119,120,3,40,20,0,120,121,5,38,0,0,121,27,1,0,0,0,122,123,
-        3,40,20,0,123,125,3,44,22,0,124,126,3,36,18,0,125,124,1,0,0,0,125,
-        126,1,0,0,0,126,29,1,0,0,0,127,129,3,42,21,0,128,130,3,36,18,0,129,
-        128,1,0,0,0,129,130,1,0,0,0,130,31,1,0,0,0,131,133,5,10,0,0,132,
-        134,3,36,18,0,133,132,1,0,0,0,133,134,1,0,0,0,134,33,1,0,0,0,135,
-        136,3,36,18,0,136,35,1,0,0,0,137,139,3,38,19,0,138,137,1,0,0,0,139,
-        140,1,0,0,0,140,138,1,0,0,0,140,141,1,0,0,0,141,37,1,0,0,0,142,148,
-        5,40,0,0,143,148,5,39,0,0,144,148,5,38,0,0,145,148,3,44,22,0,146,
-        148,3,42,21,0,147,142,1,0,0,0,147,143,1,0,0,0,147,144,1,0,0,0,147,
-        145,1,0,0,0,147,146,1,0,0,0,148,39,1,0,0,0,149,150,5,40,0,0,150,
-        41,1,0,0,0,151,152,7,2,0,0,152,43,1,0,0,0,153,154,7,3,0,0,154,45,
-        1,0,0,0,16,48,50,56,61,78,82,87,92,99,107,114,125,129,133,140,147
+        7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
+        2,27,7,27,2,28,7,28,1,0,1,0,5,0,61,8,0,10,0,12,0,64,9,0,1,0,1,0,
+        1,1,3,1,69,8,1,1,1,4,1,72,8,1,11,1,12,1,73,1,2,1,2,1,2,1,2,1,2,1,
+        2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,3,
+        2,97,8,2,1,3,1,3,3,3,101,8,3,1,4,1,4,1,4,3,4,106,8,4,1,5,1,5,1,5,
+        3,5,111,8,5,1,6,1,6,1,6,3,6,116,8,6,1,7,1,7,1,8,1,8,1,8,3,8,123,
+        8,8,1,9,1,9,1,9,3,9,128,8,9,1,10,1,10,1,10,1,10,3,10,134,8,10,1,
+        11,1,11,1,11,3,11,139,8,11,1,12,1,12,1,13,1,13,3,13,145,8,13,1,14,
+        1,14,1,15,1,15,1,16,1,16,3,16,153,8,16,1,17,1,17,1,17,3,17,158,8,
+        17,1,18,1,18,1,18,1,19,1,19,1,19,1,20,1,20,1,20,3,20,169,8,20,1,
+        21,1,21,3,21,173,8,21,1,22,1,22,3,22,177,8,22,1,23,1,23,1,24,4,24,
+        182,8,24,11,24,12,24,183,1,25,1,25,1,25,1,25,1,25,3,25,191,8,25,
+        1,26,1,26,1,27,1,27,1,28,1,28,1,28,0,0,29,0,2,4,6,8,10,12,14,16,
+        18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,0,6,
+        1,0,1,2,1,0,28,31,1,0,14,19,1,0,22,27,1,0,32,40,1,0,41,53,212,0,
+        62,1,0,0,0,2,68,1,0,0,0,4,96,1,0,0,0,6,98,1,0,0,0,8,102,1,0,0,0,
+        10,107,1,0,0,0,12,112,1,0,0,0,14,117,1,0,0,0,16,119,1,0,0,0,18,124,
+        1,0,0,0,20,133,1,0,0,0,22,135,1,0,0,0,24,140,1,0,0,0,26,142,1,0,
+        0,0,28,146,1,0,0,0,30,148,1,0,0,0,32,150,1,0,0,0,34,154,1,0,0,0,
+        36,159,1,0,0,0,38,162,1,0,0,0,40,165,1,0,0,0,42,170,1,0,0,0,44,174,
+        1,0,0,0,46,178,1,0,0,0,48,181,1,0,0,0,50,190,1,0,0,0,52,192,1,0,
+        0,0,54,194,1,0,0,0,56,196,1,0,0,0,58,61,3,2,1,0,59,61,5,58,0,0,60,
+        58,1,0,0,0,60,59,1,0,0,0,61,64,1,0,0,0,62,60,1,0,0,0,62,63,1,0,0,
+        0,63,65,1,0,0,0,64,62,1,0,0,0,65,66,5,0,0,1,66,1,1,0,0,0,67,69,3,
+        4,2,0,68,67,1,0,0,0,68,69,1,0,0,0,69,71,1,0,0,0,70,72,5,58,0,0,71,
+        70,1,0,0,0,72,73,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,3,1,0,0,
+        0,75,97,3,6,3,0,76,97,3,8,4,0,77,97,3,10,5,0,78,97,3,12,6,0,79,97,
+        3,14,7,0,80,97,3,16,8,0,81,97,3,18,9,0,82,97,3,20,10,0,83,97,3,22,
+        11,0,84,97,3,24,12,0,85,97,3,26,13,0,86,97,3,28,14,0,87,97,3,30,
+        15,0,88,97,3,32,16,0,89,97,3,34,17,0,90,97,3,36,18,0,91,97,3,38,
+        19,0,92,97,3,40,20,0,93,97,3,42,21,0,94,97,3,44,22,0,95,97,3,46,
+        23,0,96,75,1,0,0,0,96,76,1,0,0,0,96,77,1,0,0,0,96,78,1,0,0,0,96,
+        79,1,0,0,0,96,80,1,0,0,0,96,81,1,0,0,0,96,82,1,0,0,0,96,83,1,0,0,
+        0,96,84,1,0,0,0,96,85,1,0,0,0,96,86,1,0,0,0,96,87,1,0,0,0,96,88,
+        1,0,0,0,96,89,1,0,0,0,96,90,1,0,0,0,96,91,1,0,0,0,96,92,1,0,0,0,
+        96,93,1,0,0,0,96,94,1,0,0,0,96,95,1,0,0,0,97,5,1,0,0,0,98,100,7,
+        0,0,0,99,101,3,48,24,0,100,99,1,0,0,0,100,101,1,0,0,0,101,7,1,0,
+        0,0,102,103,3,52,26,0,103,105,5,3,0,0,104,106,3,48,24,0,105,104,
+        1,0,0,0,105,106,1,0,0,0,106,9,1,0,0,0,107,108,3,52,26,0,108,110,
+        5,4,0,0,109,111,3,48,24,0,110,109,1,0,0,0,110,111,1,0,0,0,111,11,
+        1,0,0,0,112,113,3,52,26,0,113,115,5,13,0,0,114,116,3,48,24,0,115,
+        114,1,0,0,0,115,116,1,0,0,0,116,13,1,0,0,0,117,118,7,1,0,0,118,15,
+        1,0,0,0,119,120,3,52,26,0,120,122,5,7,0,0,121,123,3,48,24,0,122,
+        121,1,0,0,0,122,123,1,0,0,0,123,17,1,0,0,0,124,125,3,52,26,0,125,
+        127,5,8,0,0,126,128,3,48,24,0,127,126,1,0,0,0,127,128,1,0,0,0,128,
+        19,1,0,0,0,129,130,3,52,26,0,130,131,5,9,0,0,131,134,1,0,0,0,132,
+        134,5,9,0,0,133,129,1,0,0,0,133,132,1,0,0,0,134,21,1,0,0,0,135,136,
+        3,52,26,0,136,138,5,10,0,0,137,139,3,48,24,0,138,137,1,0,0,0,138,
+        139,1,0,0,0,139,23,1,0,0,0,140,141,5,11,0,0,141,25,1,0,0,0,142,144,
+        7,2,0,0,143,145,3,48,24,0,144,143,1,0,0,0,144,145,1,0,0,0,145,27,
+        1,0,0,0,146,147,5,20,0,0,147,29,1,0,0,0,148,149,5,21,0,0,149,31,
+        1,0,0,0,150,152,7,3,0,0,151,153,3,48,24,0,152,151,1,0,0,0,152,153,
+        1,0,0,0,153,33,1,0,0,0,154,155,3,52,26,0,155,157,5,5,0,0,156,158,
+        3,48,24,0,157,156,1,0,0,0,157,158,1,0,0,0,158,35,1,0,0,0,159,160,
+        3,52,26,0,160,161,5,6,0,0,161,37,1,0,0,0,162,163,3,52,26,0,163,164,
+        5,54,0,0,164,39,1,0,0,0,165,166,3,52,26,0,166,168,3,56,28,0,167,
+        169,3,48,24,0,168,167,1,0,0,0,168,169,1,0,0,0,169,41,1,0,0,0,170,
+        172,3,54,27,0,171,173,3,48,24,0,172,171,1,0,0,0,172,173,1,0,0,0,
+        173,43,1,0,0,0,174,176,5,12,0,0,175,177,3,48,24,0,176,175,1,0,0,
+        0,176,177,1,0,0,0,177,45,1,0,0,0,178,179,3,48,24,0,179,47,1,0,0,
+        0,180,182,3,50,25,0,181,180,1,0,0,0,182,183,1,0,0,0,183,181,1,0,
+        0,0,183,184,1,0,0,0,184,49,1,0,0,0,185,191,5,56,0,0,186,191,5,55,
+        0,0,187,191,5,54,0,0,188,191,3,56,28,0,189,191,3,54,27,0,190,185,
+        1,0,0,0,190,186,1,0,0,0,190,187,1,0,0,0,190,188,1,0,0,0,190,189,
+        1,0,0,0,191,51,1,0,0,0,192,193,5,56,0,0,193,53,1,0,0,0,194,195,7,
+        4,0,0,195,55,1,0,0,0,196,197,7,5,0,0,197,57,1,0,0,0,21,60,62,68,
+        73,96,100,105,110,115,122,127,133,138,144,152,157,168,172,176,183,
+        190
     ]
 
 class MasmParser ( Parser ):
@@ -84,11 +102,18 @@ class MasmParser ( Parser ):
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "':'" ]
 
-    symbolicNames = [ "<INVALID>", "INCLUDE", "INCLUDELIB", "EQU", "PROC", 
-                      "ENDP", "STRUCT", "ENDS", "MACRO", "ENDM", "END", 
-                      "SEGMENT", "DATA_SEG", "DATAQ_SEG", "CONST_SEG", "CODE_SEG", 
+    symbolicNames = [ "<INVALID>", "INCLUDE", "INCLUDELIB", "EQU", "TYPEDEF", 
+                      "PROC", "ENDP", "STRUCT", "UNION", "ENDS", "MACRO", 
+                      "ENDM", "END", "SEGMENT", "IFDEF", "IFNDEF", "IF1", 
+                      "IF2", "IF_BARE", "ELSEIF_BARE", "ELSE_BARE", "ENDIF_BARE", 
+                      "FOR", "FORC", "IRP", "IRPC", "REPT", "WHILE_BARE", 
+                      "DATA_SEG", "DATAQ_SEG", "CONST_SEG", "CODE_SEG", 
                       "IF_DIR", "ELSEIF_DIR", "ELSE_DIR", "ENDIF_DIR", "WHILE_DIR", 
                       "ENDW_DIR", "REPEAT_DIR", "UNTIL_DIR", "UNTILCXZ_DIR", 
                       "DB", "DW", "DD", "DQ", "DT", "BYTE", "WORD_TYPE", 
@@ -100,28 +125,36 @@ class MasmParser ( Parser ):
     RULE_statement = 2
     RULE_includeStmt = 3
     RULE_equStmt = 4
-    RULE_namedSegmentStmt = 5
-    RULE_simpleSegmentStmt = 6
-    RULE_structStartStmt = 7
-    RULE_structEndStmt = 8
-    RULE_macroStartStmt = 9
-    RULE_endmStmt = 10
-    RULE_procStartStmt = 11
-    RULE_procEndStmt = 12
-    RULE_labelStmt = 13
-    RULE_dataDeclStmt = 14
-    RULE_structuredDirectiveStmt = 15
-    RULE_endStmt = 16
-    RULE_instructionStmt = 17
-    RULE_lineItems = 18
-    RULE_lineAtom = 19
-    RULE_identifier = 20
-    RULE_structuredDirective = 21
-    RULE_dataType = 22
+    RULE_typedefStmt = 5
+    RULE_namedSegmentStmt = 6
+    RULE_simpleSegmentStmt = 7
+    RULE_structStartStmt = 8
+    RULE_unionStartStmt = 9
+    RULE_structEndStmt = 10
+    RULE_macroStartStmt = 11
+    RULE_endmStmt = 12
+    RULE_condAssembleStmt = 13
+    RULE_condAssembleElse = 14
+    RULE_condAssembleEndif = 15
+    RULE_macroLoopStmt = 16
+    RULE_procStartStmt = 17
+    RULE_procEndStmt = 18
+    RULE_labelStmt = 19
+    RULE_dataDeclStmt = 20
+    RULE_structuredDirectiveStmt = 21
+    RULE_endStmt = 22
+    RULE_instructionStmt = 23
+    RULE_lineItems = 24
+    RULE_lineAtom = 25
+    RULE_identifier = 26
+    RULE_structuredDirective = 27
+    RULE_dataType = 28
 
     ruleNames =  [ "compilationUnit", "line", "statement", "includeStmt", 
-                   "equStmt", "namedSegmentStmt", "simpleSegmentStmt", "structStartStmt", 
-                   "structEndStmt", "macroStartStmt", "endmStmt", "procStartStmt", 
+                   "equStmt", "typedefStmt", "namedSegmentStmt", "simpleSegmentStmt", 
+                   "structStartStmt", "unionStartStmt", "structEndStmt", 
+                   "macroStartStmt", "endmStmt", "condAssembleStmt", "condAssembleElse", 
+                   "condAssembleEndif", "macroLoopStmt", "procStartStmt", 
                    "procEndStmt", "labelStmt", "dataDeclStmt", "structuredDirectiveStmt", 
                    "endStmt", "instructionStmt", "lineItems", "lineAtom", 
                    "identifier", "structuredDirective", "dataType" ]
@@ -130,45 +163,61 @@ class MasmParser ( Parser ):
     INCLUDE=1
     INCLUDELIB=2
     EQU=3
-    PROC=4
-    ENDP=5
-    STRUCT=6
-    ENDS=7
-    MACRO=8
-    ENDM=9
-    END=10
-    SEGMENT=11
-    DATA_SEG=12
-    DATAQ_SEG=13
-    CONST_SEG=14
-    CODE_SEG=15
-    IF_DIR=16
-    ELSEIF_DIR=17
-    ELSE_DIR=18
-    ENDIF_DIR=19
-    WHILE_DIR=20
-    ENDW_DIR=21
-    REPEAT_DIR=22
-    UNTIL_DIR=23
-    UNTILCXZ_DIR=24
-    DB=25
-    DW=26
-    DD=27
-    DQ=28
-    DT=29
-    BYTE=30
-    WORD_TYPE=31
-    DWORD=32
-    QWORD=33
-    TBYTE=34
-    REAL4=35
-    REAL8=36
-    REAL10=37
-    COLON=38
-    STRING=39
-    WORD=40
-    WS=41
-    EOL=42
+    TYPEDEF=4
+    PROC=5
+    ENDP=6
+    STRUCT=7
+    UNION=8
+    ENDS=9
+    MACRO=10
+    ENDM=11
+    END=12
+    SEGMENT=13
+    IFDEF=14
+    IFNDEF=15
+    IF1=16
+    IF2=17
+    IF_BARE=18
+    ELSEIF_BARE=19
+    ELSE_BARE=20
+    ENDIF_BARE=21
+    FOR=22
+    FORC=23
+    IRP=24
+    IRPC=25
+    REPT=26
+    WHILE_BARE=27
+    DATA_SEG=28
+    DATAQ_SEG=29
+    CONST_SEG=30
+    CODE_SEG=31
+    IF_DIR=32
+    ELSEIF_DIR=33
+    ELSE_DIR=34
+    ENDIF_DIR=35
+    WHILE_DIR=36
+    ENDW_DIR=37
+    REPEAT_DIR=38
+    UNTIL_DIR=39
+    UNTILCXZ_DIR=40
+    DB=41
+    DW=42
+    DD=43
+    DQ=44
+    DT=45
+    BYTE=46
+    WORD_TYPE=47
+    DWORD=48
+    QWORD=49
+    TBYTE=50
+    REAL4=51
+    REAL8=52
+    REAL10=53
+    COLON=54
+    STRING=55
+    WORD=56
+    WS=57
+    EOL=58
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -221,29 +270,29 @@ class MasmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 50
+            self.state = 62
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 6597069764102) != 0):
-                self.state = 48
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 432345564227557894) != 0):
+                self.state = 60
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
                 if la_ == 1:
-                    self.state = 46
+                    self.state = 58
                     self.line()
                     pass
 
                 elif la_ == 2:
-                    self.state = 47
+                    self.state = 59
                     self.match(MasmParser.EOL)
                     pass
 
 
-                self.state = 52
+                self.state = 64
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 53
+            self.state = 65
             self.match(MasmParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
@@ -290,25 +339,25 @@ class MasmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 56
+            self.state = 68
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023252998) != 0):
-                self.state = 55
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115188075846150) != 0):
+                self.state = 67
                 self.statement()
 
 
-            self.state = 59 
+            self.state = 71 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 58
+                    self.state = 70
                     self.match(MasmParser.EOL)
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 61 
+                self.state = 73 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,3,self._ctx)
 
@@ -336,6 +385,10 @@ class MasmParser ( Parser ):
             return self.getTypedRuleContext(MasmParser.EquStmtContext,0)
 
 
+        def typedefStmt(self):
+            return self.getTypedRuleContext(MasmParser.TypedefStmtContext,0)
+
+
         def namedSegmentStmt(self):
             return self.getTypedRuleContext(MasmParser.NamedSegmentStmtContext,0)
 
@@ -348,6 +401,10 @@ class MasmParser ( Parser ):
             return self.getTypedRuleContext(MasmParser.StructStartStmtContext,0)
 
 
+        def unionStartStmt(self):
+            return self.getTypedRuleContext(MasmParser.UnionStartStmtContext,0)
+
+
         def structEndStmt(self):
             return self.getTypedRuleContext(MasmParser.StructEndStmtContext,0)
 
@@ -358,6 +415,22 @@ class MasmParser ( Parser ):
 
         def endmStmt(self):
             return self.getTypedRuleContext(MasmParser.EndmStmtContext,0)
+
+
+        def condAssembleStmt(self):
+            return self.getTypedRuleContext(MasmParser.CondAssembleStmtContext,0)
+
+
+        def condAssembleElse(self):
+            return self.getTypedRuleContext(MasmParser.CondAssembleElseContext,0)
+
+
+        def condAssembleEndif(self):
+            return self.getTypedRuleContext(MasmParser.CondAssembleEndifContext,0)
+
+
+        def macroLoopStmt(self):
+            return self.getTypedRuleContext(MasmParser.MacroLoopStmtContext,0)
 
 
         def procStartStmt(self):
@@ -405,96 +478,132 @@ class MasmParser ( Parser ):
         localctx = MasmParser.StatementContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_statement)
         try:
-            self.state = 78
+            self.state = 96
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,4,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 63
+                self.state = 75
                 self.includeStmt()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 64
+                self.state = 76
                 self.equStmt()
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 65
-                self.namedSegmentStmt()
+                self.state = 77
+                self.typedefStmt()
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 66
-                self.simpleSegmentStmt()
+                self.state = 78
+                self.namedSegmentStmt()
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 67
-                self.structStartStmt()
+                self.state = 79
+                self.simpleSegmentStmt()
                 pass
 
             elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
-                self.state = 68
-                self.structEndStmt()
+                self.state = 80
+                self.structStartStmt()
                 pass
 
             elif la_ == 7:
                 self.enterOuterAlt(localctx, 7)
-                self.state = 69
-                self.macroStartStmt()
+                self.state = 81
+                self.unionStartStmt()
                 pass
 
             elif la_ == 8:
                 self.enterOuterAlt(localctx, 8)
-                self.state = 70
-                self.endmStmt()
+                self.state = 82
+                self.structEndStmt()
                 pass
 
             elif la_ == 9:
                 self.enterOuterAlt(localctx, 9)
-                self.state = 71
-                self.procStartStmt()
+                self.state = 83
+                self.macroStartStmt()
                 pass
 
             elif la_ == 10:
                 self.enterOuterAlt(localctx, 10)
-                self.state = 72
-                self.procEndStmt()
+                self.state = 84
+                self.endmStmt()
                 pass
 
             elif la_ == 11:
                 self.enterOuterAlt(localctx, 11)
-                self.state = 73
-                self.labelStmt()
+                self.state = 85
+                self.condAssembleStmt()
                 pass
 
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
-                self.state = 74
-                self.dataDeclStmt()
+                self.state = 86
+                self.condAssembleElse()
                 pass
 
             elif la_ == 13:
                 self.enterOuterAlt(localctx, 13)
-                self.state = 75
-                self.structuredDirectiveStmt()
+                self.state = 87
+                self.condAssembleEndif()
                 pass
 
             elif la_ == 14:
                 self.enterOuterAlt(localctx, 14)
-                self.state = 76
-                self.endStmt()
+                self.state = 88
+                self.macroLoopStmt()
                 pass
 
             elif la_ == 15:
                 self.enterOuterAlt(localctx, 15)
-                self.state = 77
+                self.state = 89
+                self.procStartStmt()
+                pass
+
+            elif la_ == 16:
+                self.enterOuterAlt(localctx, 16)
+                self.state = 90
+                self.procEndStmt()
+                pass
+
+            elif la_ == 17:
+                self.enterOuterAlt(localctx, 17)
+                self.state = 91
+                self.labelStmt()
+                pass
+
+            elif la_ == 18:
+                self.enterOuterAlt(localctx, 18)
+                self.state = 92
+                self.dataDeclStmt()
+                pass
+
+            elif la_ == 19:
+                self.enterOuterAlt(localctx, 19)
+                self.state = 93
+                self.structuredDirectiveStmt()
+                pass
+
+            elif la_ == 20:
+                self.enterOuterAlt(localctx, 20)
+                self.state = 94
+                self.endStmt()
+                pass
+
+            elif la_ == 21:
+                self.enterOuterAlt(localctx, 21)
+                self.state = 95
                 self.instructionStmt()
                 pass
 
@@ -544,18 +653,18 @@ class MasmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 80
+            self.state = 98
             _la = self._input.LA(1)
             if not(_la==1 or _la==2):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
-            self.state = 82
+            self.state = 100
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 81
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 99
                 self.lineItems()
 
 
@@ -605,15 +714,73 @@ class MasmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 84
+            self.state = 102
             self.identifier()
-            self.state = 85
+            self.state = 103
             self.match(MasmParser.EQU)
-            self.state = 87
+            self.state = 105
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 86
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 104
+                self.lineItems()
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class TypedefStmtContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def identifier(self):
+            return self.getTypedRuleContext(MasmParser.IdentifierContext,0)
+
+
+        def TYPEDEF(self):
+            return self.getToken(MasmParser.TYPEDEF, 0)
+
+        def lineItems(self):
+            return self.getTypedRuleContext(MasmParser.LineItemsContext,0)
+
+
+        def getRuleIndex(self):
+            return MasmParser.RULE_typedefStmt
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitTypedefStmt" ):
+                return visitor.visitTypedefStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def typedefStmt(self):
+
+        localctx = MasmParser.TypedefStmtContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 10, self.RULE_typedefStmt)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 107
+            self.identifier()
+            self.state = 108
+            self.match(MasmParser.TYPEDEF)
+            self.state = 110
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 109
                 self.lineItems()
 
 
@@ -659,19 +826,19 @@ class MasmParser ( Parser ):
     def namedSegmentStmt(self):
 
         localctx = MasmParser.NamedSegmentStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 10, self.RULE_namedSegmentStmt)
+        self.enterRule(localctx, 12, self.RULE_namedSegmentStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 89
+            self.state = 112
             self.identifier()
-            self.state = 90
+            self.state = 113
             self.match(MasmParser.SEGMENT)
-            self.state = 92
+            self.state = 115
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 91
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 114
                 self.lineItems()
 
 
@@ -718,13 +885,13 @@ class MasmParser ( Parser ):
     def simpleSegmentStmt(self):
 
         localctx = MasmParser.SimpleSegmentStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 12, self.RULE_simpleSegmentStmt)
+        self.enterRule(localctx, 14, self.RULE_simpleSegmentStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 94
+            self.state = 117
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 61440) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4026531840) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -771,19 +938,77 @@ class MasmParser ( Parser ):
     def structStartStmt(self):
 
         localctx = MasmParser.StructStartStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 14, self.RULE_structStartStmt)
+        self.enterRule(localctx, 16, self.RULE_structStartStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 96
+            self.state = 119
             self.identifier()
-            self.state = 97
+            self.state = 120
             self.match(MasmParser.STRUCT)
-            self.state = 99
+            self.state = 122
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 98
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 121
+                self.lineItems()
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class UnionStartStmtContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def identifier(self):
+            return self.getTypedRuleContext(MasmParser.IdentifierContext,0)
+
+
+        def UNION(self):
+            return self.getToken(MasmParser.UNION, 0)
+
+        def lineItems(self):
+            return self.getTypedRuleContext(MasmParser.LineItemsContext,0)
+
+
+        def getRuleIndex(self):
+            return MasmParser.RULE_unionStartStmt
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitUnionStartStmt" ):
+                return visitor.visitUnionStartStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def unionStartStmt(self):
+
+        localctx = MasmParser.UnionStartStmtContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 18, self.RULE_unionStartStmt)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 124
+            self.identifier()
+            self.state = 125
+            self.match(MasmParser.UNION)
+            self.state = 127
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 126
                 self.lineItems()
 
 
@@ -825,13 +1050,26 @@ class MasmParser ( Parser ):
     def structEndStmt(self):
 
         localctx = MasmParser.StructEndStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 16, self.RULE_structEndStmt)
+        self.enterRule(localctx, 20, self.RULE_structEndStmt)
         try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 101
-            self.identifier()
-            self.state = 102
-            self.match(MasmParser.ENDS)
+            self.state = 133
+            self._errHandler.sync(self)
+            token = self._input.LA(1)
+            if token in [56]:
+                self.enterOuterAlt(localctx, 1)
+                self.state = 129
+                self.identifier()
+                self.state = 130
+                self.match(MasmParser.ENDS)
+                pass
+            elif token in [9]:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 132
+                self.match(MasmParser.ENDS)
+                pass
+            else:
+                raise NoViableAltException(self)
+
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -874,19 +1112,19 @@ class MasmParser ( Parser ):
     def macroStartStmt(self):
 
         localctx = MasmParser.MacroStartStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 18, self.RULE_macroStartStmt)
+        self.enterRule(localctx, 22, self.RULE_macroStartStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 104
+            self.state = 135
             self.identifier()
-            self.state = 105
+            self.state = 136
             self.match(MasmParser.MACRO)
-            self.state = 107
+            self.state = 138
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 106
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 137
                 self.lineItems()
 
 
@@ -924,11 +1162,233 @@ class MasmParser ( Parser ):
     def endmStmt(self):
 
         localctx = MasmParser.EndmStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 20, self.RULE_endmStmt)
+        self.enterRule(localctx, 24, self.RULE_endmStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 109
+            self.state = 140
             self.match(MasmParser.ENDM)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class CondAssembleStmtContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def IFDEF(self):
+            return self.getToken(MasmParser.IFDEF, 0)
+
+        def IFNDEF(self):
+            return self.getToken(MasmParser.IFNDEF, 0)
+
+        def IF1(self):
+            return self.getToken(MasmParser.IF1, 0)
+
+        def IF2(self):
+            return self.getToken(MasmParser.IF2, 0)
+
+        def IF_BARE(self):
+            return self.getToken(MasmParser.IF_BARE, 0)
+
+        def ELSEIF_BARE(self):
+            return self.getToken(MasmParser.ELSEIF_BARE, 0)
+
+        def lineItems(self):
+            return self.getTypedRuleContext(MasmParser.LineItemsContext,0)
+
+
+        def getRuleIndex(self):
+            return MasmParser.RULE_condAssembleStmt
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCondAssembleStmt" ):
+                return visitor.visitCondAssembleStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def condAssembleStmt(self):
+
+        localctx = MasmParser.CondAssembleStmtContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 26, self.RULE_condAssembleStmt)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 142
+            _la = self._input.LA(1)
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1032192) != 0)):
+                self._errHandler.recoverInline(self)
+            else:
+                self._errHandler.reportMatch(self)
+                self.consume()
+            self.state = 144
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 143
+                self.lineItems()
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class CondAssembleElseContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def ELSE_BARE(self):
+            return self.getToken(MasmParser.ELSE_BARE, 0)
+
+        def getRuleIndex(self):
+            return MasmParser.RULE_condAssembleElse
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCondAssembleElse" ):
+                return visitor.visitCondAssembleElse(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def condAssembleElse(self):
+
+        localctx = MasmParser.CondAssembleElseContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 28, self.RULE_condAssembleElse)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 146
+            self.match(MasmParser.ELSE_BARE)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class CondAssembleEndifContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def ENDIF_BARE(self):
+            return self.getToken(MasmParser.ENDIF_BARE, 0)
+
+        def getRuleIndex(self):
+            return MasmParser.RULE_condAssembleEndif
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCondAssembleEndif" ):
+                return visitor.visitCondAssembleEndif(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def condAssembleEndif(self):
+
+        localctx = MasmParser.CondAssembleEndifContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 30, self.RULE_condAssembleEndif)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 148
+            self.match(MasmParser.ENDIF_BARE)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class MacroLoopStmtContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def FOR(self):
+            return self.getToken(MasmParser.FOR, 0)
+
+        def FORC(self):
+            return self.getToken(MasmParser.FORC, 0)
+
+        def IRP(self):
+            return self.getToken(MasmParser.IRP, 0)
+
+        def IRPC(self):
+            return self.getToken(MasmParser.IRPC, 0)
+
+        def REPT(self):
+            return self.getToken(MasmParser.REPT, 0)
+
+        def WHILE_BARE(self):
+            return self.getToken(MasmParser.WHILE_BARE, 0)
+
+        def lineItems(self):
+            return self.getTypedRuleContext(MasmParser.LineItemsContext,0)
+
+
+        def getRuleIndex(self):
+            return MasmParser.RULE_macroLoopStmt
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitMacroLoopStmt" ):
+                return visitor.visitMacroLoopStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def macroLoopStmt(self):
+
+        localctx = MasmParser.MacroLoopStmtContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 32, self.RULE_macroLoopStmt)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 150
+            _la = self._input.LA(1)
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 264241152) != 0)):
+                self._errHandler.recoverInline(self)
+            else:
+                self._errHandler.reportMatch(self)
+                self.consume()
+            self.state = 152
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 151
+                self.lineItems()
+
+
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -971,19 +1431,19 @@ class MasmParser ( Parser ):
     def procStartStmt(self):
 
         localctx = MasmParser.ProcStartStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 22, self.RULE_procStartStmt)
+        self.enterRule(localctx, 34, self.RULE_procStartStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 111
+            self.state = 154
             self.identifier()
-            self.state = 112
+            self.state = 155
             self.match(MasmParser.PROC)
-            self.state = 114
+            self.state = 157
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 113
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 156
                 self.lineItems()
 
 
@@ -1025,12 +1485,12 @@ class MasmParser ( Parser ):
     def procEndStmt(self):
 
         localctx = MasmParser.ProcEndStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 24, self.RULE_procEndStmt)
+        self.enterRule(localctx, 36, self.RULE_procEndStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 116
+            self.state = 159
             self.identifier()
-            self.state = 117
+            self.state = 160
             self.match(MasmParser.ENDP)
         except RecognitionException as re:
             localctx.exception = re
@@ -1070,12 +1530,12 @@ class MasmParser ( Parser ):
     def labelStmt(self):
 
         localctx = MasmParser.LabelStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 26, self.RULE_labelStmt)
+        self.enterRule(localctx, 38, self.RULE_labelStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 119
+            self.state = 162
             self.identifier()
-            self.state = 120
+            self.state = 163
             self.match(MasmParser.COLON)
         except RecognitionException as re:
             localctx.exception = re
@@ -1120,19 +1580,19 @@ class MasmParser ( Parser ):
     def dataDeclStmt(self):
 
         localctx = MasmParser.DataDeclStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 28, self.RULE_dataDeclStmt)
+        self.enterRule(localctx, 40, self.RULE_dataDeclStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 122
+            self.state = 165
             self.identifier()
-            self.state = 123
+            self.state = 166
             self.dataType()
-            self.state = 125
+            self.state = 168
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 124
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 167
                 self.lineItems()
 
 
@@ -1175,17 +1635,17 @@ class MasmParser ( Parser ):
     def structuredDirectiveStmt(self):
 
         localctx = MasmParser.StructuredDirectiveStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 30, self.RULE_structuredDirectiveStmt)
+        self.enterRule(localctx, 42, self.RULE_structuredDirectiveStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 127
+            self.state = 170
             self.structuredDirective()
-            self.state = 129
+            self.state = 172
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 128
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 171
                 self.lineItems()
 
 
@@ -1227,17 +1687,17 @@ class MasmParser ( Parser ):
     def endStmt(self):
 
         localctx = MasmParser.EndStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 32, self.RULE_endStmt)
+        self.enterRule(localctx, 44, self.RULE_endStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 131
+            self.state = 174
             self.match(MasmParser.END)
-            self.state = 133
+            self.state = 176
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0):
-                self.state = 132
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0):
+                self.state = 175
                 self.lineItems()
 
 
@@ -1276,10 +1736,10 @@ class MasmParser ( Parser ):
     def instructionStmt(self):
 
         localctx = MasmParser.InstructionStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 34, self.RULE_instructionStmt)
+        self.enterRule(localctx, 46, self.RULE_instructionStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 135
+            self.state = 178
             self.lineItems()
         except RecognitionException as re:
             localctx.exception = re
@@ -1319,20 +1779,20 @@ class MasmParser ( Parser ):
     def lineItems(self):
 
         localctx = MasmParser.LineItemsContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 36, self.RULE_lineItems)
+        self.enterRule(localctx, 48, self.RULE_lineItems)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 138 
+            self.state = 181 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 137
+                self.state = 180
                 self.lineAtom()
-                self.state = 140 
+                self.state = 183 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023190016) != 0)):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 144115183780888576) != 0)):
                     break
 
         except RecognitionException as re:
@@ -1383,34 +1843,34 @@ class MasmParser ( Parser ):
     def lineAtom(self):
 
         localctx = MasmParser.LineAtomContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 38, self.RULE_lineAtom)
+        self.enterRule(localctx, 50, self.RULE_lineAtom)
         try:
-            self.state = 147
+            self.state = 190
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [40]:
+            if token in [56]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 142
+                self.state = 185
                 self.match(MasmParser.WORD)
                 pass
-            elif token in [39]:
+            elif token in [55]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 143
+                self.state = 186
                 self.match(MasmParser.STRING)
                 pass
-            elif token in [38]:
+            elif token in [54]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 144
+                self.state = 187
                 self.match(MasmParser.COLON)
                 pass
-            elif token in [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]:
+            elif token in [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53]:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 145
+                self.state = 188
                 self.dataType()
                 pass
-            elif token in [16, 17, 18, 19, 20, 21, 22, 23, 24]:
+            elif token in [32, 33, 34, 35, 36, 37, 38, 39, 40]:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 146
+                self.state = 189
                 self.structuredDirective()
                 pass
             else:
@@ -1450,10 +1910,10 @@ class MasmParser ( Parser ):
     def identifier(self):
 
         localctx = MasmParser.IdentifierContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 40, self.RULE_identifier)
+        self.enterRule(localctx, 52, self.RULE_identifier)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 149
+            self.state = 192
             self.match(MasmParser.WORD)
         except RecognitionException as re:
             localctx.exception = re
@@ -1513,13 +1973,13 @@ class MasmParser ( Parser ):
     def structuredDirective(self):
 
         localctx = MasmParser.StructuredDirectiveContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 42, self.RULE_structuredDirective)
+        self.enterRule(localctx, 54, self.RULE_structuredDirective)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 151
+            self.state = 194
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 33488896) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 2194728288256) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1594,13 +2054,13 @@ class MasmParser ( Parser ):
     def dataType(self):
 
         localctx = MasmParser.DataTypeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 44, self.RULE_dataType)
+        self.enterRule(localctx, 56, self.RULE_dataType)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 153
+            self.state = 196
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 274844352512) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 18012199486226432) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

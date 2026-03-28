@@ -1,4 +1,4 @@
-# Generated from /Volumes/External/Code/Masma/resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
+# Generated from resources/grammars/masm/patched/Masm.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .MasmParser import MasmParser
@@ -34,6 +34,11 @@ class MasmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MasmParser#typedefStmt.
+    def visitTypedefStmt(self, ctx:MasmParser.TypedefStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MasmParser#namedSegmentStmt.
     def visitNamedSegmentStmt(self, ctx:MasmParser.NamedSegmentStmtContext):
         return self.visitChildren(ctx)
@@ -49,6 +54,11 @@ class MasmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MasmParser#unionStartStmt.
+    def visitUnionStartStmt(self, ctx:MasmParser.UnionStartStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MasmParser#structEndStmt.
     def visitStructEndStmt(self, ctx:MasmParser.StructEndStmtContext):
         return self.visitChildren(ctx)
@@ -61,6 +71,26 @@ class MasmVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MasmParser#endmStmt.
     def visitEndmStmt(self, ctx:MasmParser.EndmStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MasmParser#condAssembleStmt.
+    def visitCondAssembleStmt(self, ctx:MasmParser.CondAssembleStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MasmParser#condAssembleElse.
+    def visitCondAssembleElse(self, ctx:MasmParser.CondAssembleElseContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MasmParser#condAssembleEndif.
+    def visitCondAssembleEndif(self, ctx:MasmParser.CondAssembleEndifContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MasmParser#macroLoopStmt.
+    def visitMacroLoopStmt(self, ctx:MasmParser.MacroLoopStmtContext):
         return self.visitChildren(ctx)
 
 
