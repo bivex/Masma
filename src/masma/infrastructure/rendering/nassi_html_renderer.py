@@ -22,6 +22,7 @@ from masma.domain.control_flow import (
     MacroCallFlowStep,
     RepeatStringFlowStep,
     RepeatWhileFlowStep,
+    StructDefinition,
     SwitchCaseFlow,
     SwitchFlowStep,
     WhileFlowStep,
@@ -52,6 +53,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         sections = "".join(self._render_function(function) for function in diagram.functions)
         if not sections:
             sections = '<section class="function-panel"><p class="empty-file">No procedures found.</p></section>'
+        if diagram.structs:
+            sections = self._render_structs(diagram.structs) + sections
         if diagram.file_header:
             header_block = (
                 f'<div class="file-header-block">{escape(diagram.file_header)}</div>'
@@ -564,6 +567,78 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         color: var(--muted);
       }}
 
+      /* ── Struct definitions panel ── */
+      .structs-panel {{
+        margin-bottom: 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(10, 15, 24, 0.72);
+      }}
+      .structs-panel-head {{
+        padding: 9px 16px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)),
+          var(--surface-3);
+        border-bottom: 1px solid var(--border-strong);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--teal);
+      }}
+      .structs-grid {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(7, 11, 18, 0.84);
+      }}
+      .struct-card {{
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--teal);
+        border-radius: 7px;
+        min-width: 160px;
+        overflow: hidden;
+        background: var(--surface-2);
+      }}
+      .struct-card-name {{
+        padding: 6px 12px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0)),
+          var(--teal-dim);
+        color: var(--teal);
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-strong);
+      }}
+      .struct-fields {{
+        padding: 6px 0;
+      }}
+      .struct-field {{
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 3px 12px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.55;
+      }}
+      .struct-field:hover {{
+        background: rgba(255,255,255,0.03);
+      }}
+      .struct-field-name {{
+        color: var(--text-bright);
+        flex-shrink: 0;
+      }}
+      .struct-field-type {{
+        color: var(--muted);
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }}
+
       @media (max-width: 800px) {{
         body {{ padding: 12px; }}
         .viewer {{
@@ -609,6 +684,32 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
   </body>
 </html>
 """
+
+    def _render_structs(self, structs: tuple[StructDefinition, ...]) -> str:
+        cards = []
+        for struct in structs:
+            if struct.fields:
+                fields_html = "".join(
+                    f'<div class="struct-field">'
+                    f'<span class="struct-field-name">{escape(f.name)}</span>'
+                    f'<span class="struct-field-type">{escape(f.type)}</span>'
+                    f'</div>'
+                    for f in struct.fields
+                )
+            else:
+                fields_html = '<div class="struct-field" style="color:var(--muted);font-style:italic">empty</div>'
+            cards.append(
+                f'<div class="struct-card">'
+                f'<div class="struct-card-name">{escape(struct.name)}</div>'
+                f'<div class="struct-fields">{fields_html}</div>'
+                f'</div>'
+            )
+        return (
+            '<div class="structs-panel">'
+            '<div class="structs-panel-head">Structures</div>'
+            f'<div class="structs-grid">{"".join(cards)}</div>'
+            '</div>'
+        )
 
     def _render_function(self, function) -> str:
         return (

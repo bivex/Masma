@@ -269,6 +269,45 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
     return tuple(procedures)
 
 
+def scan_struct_blocks(lines: tuple[SourceLine, ...]) -> tuple:
+    """Return a sequence of (name, fields, line_number) tuples for each STRUCT block."""
+    from masma.domain.control_flow import StructDefinition, StructField
+
+    structs: list[StructDefinition] = []
+    current_name: str | None = None
+    current_line = 0
+    fields: list[StructField] = []
+
+    for line in lines:
+        if current_name is None:
+            m = STRUCT_RE.match(line.text)
+            if m:
+                current_name = m.group("name")
+                current_line = line.number
+                fields = []
+            continue
+
+        ends_m = ENDS_RE.match(line.text)
+        if ends_m and ends_m.group("name").lower() == current_name.lower():
+            structs.append(StructDefinition(
+                name=current_name,
+                fields=tuple(fields),
+                line=current_line,
+            ))
+            current_name = None
+            fields = []
+            continue
+
+        var_m = VARIABLE_RE.match(line.text)
+        if var_m:
+            fields.append(StructField(
+                name=var_m.group("name"),
+                type=var_m.group("type").upper(),
+            ))
+
+    return tuple(structs)
+
+
 def is_data_directive(line: SourceLine) -> bool:
     return line.text.lower() in DATA_DIRECTIVES
 

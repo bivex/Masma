@@ -126,8 +126,22 @@ class FunctionControlFlow:
 
 
 @dataclass(frozen=True, slots=True)
+class StructField:
+    name: str
+    type: str
+
+
+@dataclass(frozen=True, slots=True)
+class StructDefinition:
+    name: str
+    fields: tuple[StructField, ...]
+    line: int
+
+
+@dataclass(frozen=True, slots=True)
 class ControlFlowDiagram:
     source_location: str
     functions: tuple[FunctionControlFlow, ...]
     file_header: str | None = None
+    structs: tuple[StructDefinition, ...] = ()
 

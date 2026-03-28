@@ -43,6 +43,7 @@ from masma.infrastructure.masm.support import (
     extract_file_header,
     iter_source_lines,
     scan_procedure_blocks,
+    scan_struct_blocks,
 )
 
 _COMPARE_RE = re.compile(r"^(?P<op>cmp|test)\s+(?P<lhs>[^,]+)\s*,\s*(?P<rhs>.+)$", re.IGNORECASE)
@@ -117,6 +118,7 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
             source_location=source_unit.location,
             functions=functions,
             file_header=extract_file_header(lines),
+            structs=scan_struct_blocks(lines),
         )
 
 
