@@ -14,7 +14,11 @@ from __future__ import annotations
 import pytest
 
 from masma.domain.control_flow import (
+    ActionFlowStep,
+    CommentFlowStep,
+    ControlFlowDiagram,
     DataDeclFlowStep,
+    FunctionControlFlow,
     JumpFlowStep,
     LocalDeclFlowStep,
 )
@@ -320,3 +324,93 @@ def test_control_flow_extractor_does_not_treat_jump_target_as_proc() -> None:
     names = [fn.name for fn in diagram.functions]
     assert "Entry" in names
     assert "internal_label" not in names
+
+
+# ---------------------------------------------------------------------------
+# New feature: CommentFlowStep
+# ---------------------------------------------------------------------------
+
+
+def test_iter_source_lines_extracts_comment_field() -> None:
+    from masma.infrastructure.masm.support import iter_source_lines
+
+    source = "mov ax, 0  ; zero the register\n"
+    lines = iter_source_lines(source)
+
+    assert len(lines) == 1
+    assert lines[0].text == "mov ax, 0"
+    assert lines[0].comment == "zero the register"
+
+
+def test_iter_source_lines_full_line_comment() -> None:
+    from masma.infrastructure.masm.support import iter_source_lines
+
+    source = "; This is a full-line comment\n"
+    lines = iter_source_lines(source)
+
+    assert len(lines) == 1
+    assert lines[0].text == ""
+    assert lines[0].comment == "This is a full-line comment"
+
+
+def test_iter_source_lines_no_comment() -> None:
+    from masma.infrastructure.masm.support import iter_source_lines
+
+    source = "mov ax, bx\n"
+    lines = iter_source_lines(source)
+
+    assert len(lines) == 1
+    assert lines[0].text == "mov ax, bx"
+    assert lines[0].comment == ""
+
+
+def test_control_flow_extractor_emits_comment_flow_step() -> None:
+    extractor = MasmControlFlowExtractor()
+    source = SourceUnit(
+        identifier=SourceUnitId("comments"),
+        location="comments.asm",
+        content=(
+            "demo PROC\n"
+            "  ; setup phase\n"
+            "  mov ax, 0\n"
+            "  ; do the thing\n"
+            "  inc ax\n"
+            "  ret\n"
+            "demo ENDP\n"
+        ),
+    )
+
+    diagram = extractor.extract(source)
+
+    steps = diagram.functions[0].steps
+    comment_steps = [s for s in steps if isinstance(s, CommentFlowStep)]
+    assert len(comment_steps) == 2
+    assert comment_steps[0].text == "setup phase"
+    assert comment_steps[1].text == "do the thing"
+
+
+def test_renderer_includes_comment_toggle_in_toolbar() -> None:
+    from masma.infrastructure.rendering.nassi_html_renderer import HtmlNassiDiagramRenderer
+
+    renderer = HtmlNassiDiagramRenderer()
+    html = renderer.render(
+        ControlFlowDiagram(
+            source_location="test.asm",
+            functions=(
+                FunctionControlFlow(
+                    name="main",
+                    signature="main PROC",
+                    container=None,
+                    steps=(
+                        CommentFlowStep(text="hello"),
+                        ActionFlowStep(label="ret"),
+                    ),
+                ),
+            ),
+        )
+    )
+
+    assert "toggle-comments" in html
+    assert "ns-comment" in html
+    assert "hide-comments" in html
+    assert "hello" in html

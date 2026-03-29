@@ -158,6 +158,12 @@ class JumpFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class CommentFlowStep(ControlFlowStep):
+    """A full-line comment (``; ...``) inside a procedure body."""
+    text: str
+
+
+@dataclass(frozen=True, slots=True)
 class FunctionControlFlow:
     name: str
     signature: str

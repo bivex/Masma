@@ -96,6 +96,7 @@ class SourceLine:
     number: int
     raw: str
     text: str
+    comment: str = ""  # extracted comment text (without leading ;)
 
     @property
     def upper(self) -> str:
@@ -149,6 +150,9 @@ def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
     Handles MASM ``comment <delim>...<delim>`` multi-line comment blocks by
     blanking out every line inside the block (including the opening/closing
     lines).  The line numbers are preserved so diagnostics stay accurate.
+
+    The ``comment`` field on each SourceLine holds the extracted comment text
+    (without the leading ``;``) so it can be rendered later.
     """
     lines: list[SourceLine] = []
     in_block = False
@@ -158,11 +162,8 @@ def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
         stripped = raw_line.strip()
 
         if in_block:
-            # A line that is exactly the delimiter (possibly with trailing
-            # whitespace) closes the block.
             if stripped == block_delim:
                 in_block = False
-            # Blank the line — preserve raw for source display, text="" to skip parsing
             lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=""))
             continue
 
@@ -174,7 +175,8 @@ def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
             continue
 
         text = _strip_comment(raw_line).strip()
-        lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=text))
+        comment = _extract_comment(raw_line)
+        lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=text, comment=comment))
 
     return tuple(lines)
 
@@ -327,10 +329,10 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
     body: list[SourceLine] = []
 
     for line in lines:
-        if not line.text:
+        if not line.text and not line.comment:
             continue
 
-        seg = classify_segment(line)
+        seg = classify_segment(line) if line.text else None
         if seg is not None:
             current_segment = seg
 
@@ -612,6 +614,20 @@ def _strip_comment(line: str) -> str:
             break
         result.append(char)
     return "".join(result)
+
+
+def _extract_comment(line: str) -> str:
+    """Return the comment portion of a line (text after first unquoted ';').
+
+    Returns empty string if there is no comment.
+    """
+    in_string = False
+    for i, char in enumerate(line):
+        if char == '"':
+            in_string = not in_string
+        if char == _COMMENT_MARKER and not in_string:
+            return line[i + 1:].strip()
+    return ""
 
 
 def _error(message: str, line: int) -> SyntaxDiagnostic:

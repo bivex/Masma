@@ -10,6 +10,7 @@ from masma.domain.control_flow import (
     ActionFlowStep,
     AlignFlowStep,
     CallFlowStep,
+    CommentFlowStep,
     ControlFlowDiagram,
     ControlFlowStep,
     DeferFlowStep,
@@ -206,6 +207,50 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         font-size: 12px;
         color: var(--muted);
         overflow-wrap: anywhere;
+        flex: 1;
+      }}
+      /* ── Toolbar toggle ── */
+      .toolbar-toggle {{
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        user-select: none;
+        margin-left: auto;
+      }}
+      .toolbar-toggle input {{ display: none; }}
+      .toggle-switch {{
+        position: relative;
+        width: 28px;
+        height: 16px;
+        background: var(--surface-4);
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        transition: background 0.15s;
+      }}
+      .toggle-switch::after {{
+        content: "";
+        position: absolute;
+        top: 2px; left: 2px;
+        width: 10px; height: 10px;
+        background: var(--muted);
+        border-radius: 50%;
+        transition: transform 0.15s, background 0.15s;
+      }}
+      .toolbar-toggle input:checked + .toggle-switch {{
+        background: var(--blue-dim);
+        border-color: var(--blue);
+      }}
+      .toolbar-toggle input:checked + .toggle-switch::after {{
+        transform: translateX(12px);
+        background: var(--blue);
+      }}
+      .toggle-label {{
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
       }}
       /* ── Viewer body ── */
       .viewer-body {{
@@ -566,6 +611,32 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         height: 1px;
         background: var(--border-strong);
       }}
+      /* ── Comments ── */
+      .ns-comment {{
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        padding: 3px 12px;
+        background: rgba(142, 155, 187, 0.04);
+        border-left: 2px solid var(--muted);
+        font-size: 11.5px;
+        line-height: 1.5;
+      }}
+      .ns-comment .comment-icon {{
+        color: var(--muted);
+        font-family: var(--mono);
+        font-weight: 600;
+        flex-shrink: 0;
+        opacity: 0.5;
+      }}
+      .ns-comment .comment-text {{
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }}
+      body.hide-comments .ns-comment {{ display: none; }}
       .file-header-block {{
         margin: 0 0 12px 0;
         padding: 10px 16px;
@@ -893,6 +964,11 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       <div class="toolbar">
         <span class="toolbar-label">Nassi-Shneiderman</span>
         <code class="toolbar-path">{escape(diagram.source_location)}</code>
+        <label class="toolbar-toggle" title="Toggle comments">
+          <input type="checkbox" id="toggle-comments" checked onchange="document.body.classList.toggle('hide-comments', !this.checked)">
+          <span class="toggle-switch"></span>
+          <span class="toggle-label">Comments</span>
+        </label>
       </div>
       <main class="viewer-body">{sections}</main>
     </div>
@@ -1209,6 +1285,13 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
             return (
                 '<div class="ns-node ns-repeat">'
                 f'<div class="ns-header" aria-label="{escape(label)}">{escape(label)}</div>'
+                "</div>"
+            )
+        if isinstance(step, CommentFlowStep):
+            return (
+                '<div class="ns-comment" aria-label="Comment">'
+                f'<span class="comment-icon">;</span>'
+                f'<code class="comment-text">{escape(step.text)}</code>'
                 "</div>"
             )
         raise TypeError(f"unsupported step type: {type(step)!r}")

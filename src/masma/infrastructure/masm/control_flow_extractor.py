@@ -8,6 +8,7 @@ from masma.domain.control_flow import (
     ActionFlowStep,
     AlignFlowStep,
     CallFlowStep,
+    CommentFlowStep,
     DataDeclFlowStep,
     ControlFlowDiagram,
     FileDecl,
@@ -300,6 +301,9 @@ def _parse_sequence(
             break
 
         if not line.text or _should_skip(line.text):
+            # Full-line comment (empty code text but comment present)
+            if not line.text and line.comment:
+                steps.append(CommentFlowStep(text=line.comment))
             index += 1
             continue
 
