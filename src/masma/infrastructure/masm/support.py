@@ -173,7 +173,7 @@ def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
             continue
 
         if in_block:
-            if stripped == block_delim:
+            if block_delim in stripped:
                 in_block = False
             lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=""))
             continue
