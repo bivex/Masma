@@ -255,15 +255,20 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
         if not line.text:
             continue
 
-        if proc_match := PROC_RE.match(line.text):
+        # Strip optional leading label (e.g. "Fallthr1: .IF pbmfh")
+        text = LABEL_RE.match(line.text).group("rest") if LABEL_RE.match(line.text) else line.text
+        if not text:
+            continue
+
+        if proc_match := PROC_RE.match(text):
             stack.append(("PROC", proc_match.group("name"), line.number))
             continue
 
-        if cproc_match := CPROC_RE.match(line.text):
+        if cproc_match := CPROC_RE.match(text):
             stack.append(("PROC", cproc_match.group("name"), line.number))
             continue
 
-        if endp_match := ENDP_RE.match(line.text):
+        if endp_match := ENDP_RE.match(text):
             if not stack or stack[-1][0] != "PROC":
                 diagnostics.append(_error("ENDP without matching PROC", line.number))
                 continue
@@ -277,14 +282,14 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
                 )
             continue
 
-        if CEND_RE.match(line.text):
+        if CEND_RE.match(text):
             if not stack or stack[-1][0] != "PROC":
                 diagnostics.append(_error("cEnd without matching cProc", line.number))
                 continue
             stack.pop()
             continue
 
-        seg_m = SEGMENT_RE.match(line.text)
+        seg_m = SEGMENT_RE.match(text)
         if seg_m and seg_m.group("kind"):  # 'identifier SEGMENT', not a .data/.code directive
             seg_name = seg_m.group("name")
             if not seg_name.startswith("."):
@@ -293,18 +298,18 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
                     stack.append(("SEGMENT", seg_name, line.number))
             continue
 
-        if struct_match := STRUCT_RE.match(line.text):
+        if struct_match := STRUCT_RE.match(text):
             if not stack or stack[-1][0] not in ("MACRO", "MACRO_LOOP", "COND_ASM"):
                 stack.append(("STRUCT", struct_match.group("name"), line.number))
             continue
 
-        if union_match := UNION_RE.match(line.text):
+        if union_match := UNION_RE.match(text):
             if not stack or stack[-1][0] not in ("MACRO", "MACRO_LOOP", "COND_ASM"):
                 stack.append(("STRUCT", union_match.group("name"), line.number))
             continue
 
         # ── ENDS ──
-        if ends_match := ENDS_RE.match(line.text):
+        if ends_match := ENDS_RE.match(text):
             # Skip structural checks inside MACRO/MACRO_LOOP/COND_ASM —
             # template text or conditionally compiled, not real nesting.
             if stack and stack[-1][0] in ("MACRO", "MACRO_LOOP", "COND_ASM"):
@@ -328,75 +333,84 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
                 )
             continue
 
-        if macro_match := MACRO_RE.match(line.text):
+        if macro_match := MACRO_RE.match(text):
             stack.append(("MACRO", macro_match.group("name"), line.number))
             continue
 
-        # Macro-loop directives (FORC/FOR/IRP/IRPC/REPT/WHILE) also close with ENDM
+        # Macro-loop directives (FORC/FOR/IRP/IRPC/REPT/REPEAT/WHILE) also close with ENDM
         # % prefix allowed (e.g. "% FOR arg, <list>")
-        macro_loop_m = re.match(r"^%?\s*(forc|for\b|irp|irpc|rept|while)\b", line.text, re.IGNORECASE)
+        macro_loop_m = re.match(r"^%?\s*(forc|for\b|irp|irpc|rept|repeat\b|while)\b", text, re.IGNORECASE)
         if macro_loop_m:
             stack.append(("MACRO_LOOP", macro_loop_m.group(1).upper(), line.number))
             continue
 
-        if ENDM_RE.match(line.text):
+        if ENDM_RE.match(text):
             if not stack or stack[-1][0] not in ("MACRO", "MACRO_LOOP"):
                 diagnostics.append(_error("ENDM without matching MACRO", line.number))
                 continue
             stack.pop()
             continue
 
-        if IF_RE.match(line.text):
-            stack.append(("IF", ".IF", line.number))
+        # Inside MACRO/MACRO_LOOP bodies these are template text — don't validate nesting
+        in_macro = stack and stack[-1][0] in ("MACRO", "MACRO_LOOP")
+
+        if IF_RE.match(text):
+            if not in_macro:
+                stack.append(("IF", ".IF", line.number))
             continue
 
-        if ELSEIF_RE.match(line.text) or ELSE_RE.match(line.text):
-            if not stack or stack[-1][0] != "IF":
-                diagnostics.append(_error(f"{line.text.split()[0]} without matching .IF", line.number))
+        if ELSEIF_RE.match(text) or ELSE_RE.match(text):
+            if not in_macro and (not stack or stack[-1][0] != "IF"):
+                diagnostics.append(_error(f"{text.split()[0]} without matching .IF", line.number))
             continue
 
-        if ENDIF_RE.match(line.text):
-            if not stack or stack[-1][0] != "IF":
-                diagnostics.append(_error(".ENDIF without matching .IF", line.number))
-                continue
-            stack.pop()
+        if ENDIF_RE.match(text):
+            if not in_macro:
+                if not stack or stack[-1][0] != "IF":
+                    diagnostics.append(_error(".ENDIF without matching .IF", line.number))
+                    continue
+                stack.pop()
             continue
 
-        if WHILE_RE.match(line.text):
-            stack.append(("WHILE", ".WHILE", line.number))
+        if WHILE_RE.match(text):
+            if not in_macro:
+                stack.append(("WHILE", ".WHILE", line.number))
             continue
 
-        if ENDW_RE.match(line.text):
-            if not stack or stack[-1][0] != "WHILE":
-                diagnostics.append(_error(".ENDW without matching .WHILE", line.number))
-                continue
-            stack.pop()
+        if ENDW_RE.match(text):
+            if not in_macro:
+                if not stack or stack[-1][0] != "WHILE":
+                    diagnostics.append(_error(".ENDW without matching .WHILE", line.number))
+                    continue
+                stack.pop()
             continue
 
-        if REPEAT_RE.match(line.text):
-            stack.append(("REPEAT", ".REPEAT", line.number))
+        if REPEAT_RE.match(text):
+            if not in_macro:
+                stack.append(("REPEAT", ".REPEAT", line.number))
             continue
 
-        if UNTIL_RE.match(line.text):
-            if not stack or stack[-1][0] != "REPEAT":
-                diagnostics.append(_error(".UNTIL without matching .REPEAT", line.number))
-                continue
-            stack.pop()
+        if UNTIL_RE.match(text):
+            if not in_macro:
+                if not stack or stack[-1][0] != "REPEAT":
+                    diagnostics.append(_error(".UNTIL without matching .REPEAT", line.number))
+                    continue
+                stack.pop()
             continue
 
         # Assembly-time conditional directives (IF/IFDEF/IFNDEF/…/ELSEIF/ELSE/ENDIF)
         # These can contain conditionally-compiled SEGMENT/STRUCT that may not be
         # balanced, so we track them and skip structural checks inside.
-        if COND_ASSEMBLE_RE.match(line.text):
-            stack.append(("COND_ASM", line.text.split()[0].upper(), line.number))
+        if COND_ASSEMBLE_RE.match(text):
+            stack.append(("COND_ASM", text.split()[0].upper(), line.number))
             continue
 
-        if ELSEIF_BARE_RE.match(line.text) or ELSE_BARE_RE.match(line.text):
+        if ELSEIF_BARE_RE.match(text) or ELSE_BARE_RE.match(text):
             if stack and stack[-1][0] == "COND_ASM":
                 pass  # branch switch — stay in COND_ASM
             continue
 
-        if ENDIF_BARE_RE.match(line.text):
+        if ENDIF_BARE_RE.match(text):
             if stack and stack[-1][0] == "COND_ASM":
                 stack.pop()
             continue
