@@ -138,6 +138,18 @@ class RepeatStringFlowStep(ControlFlowStep):
 
 
 @dataclass(frozen=True, slots=True)
+class DataDeclFlowStep(ControlFlowStep):
+    """Inline data or constant declaration inside a procedure body.
+
+    Common in flat/label-as-proc style MASM where data is interspersed with code.
+    e.g. "vulkan_instance dq 0", "block_size equ 40"
+    """
+    name: str       # e.g. "vulkan_instance"
+    type_info: str  # e.g. "dq 0", "equ 40"
+    source: str     # full original line
+
+
+@dataclass(frozen=True, slots=True)
 class JumpFlowStep(ControlFlowStep):
     """An unconditional or conditional jump that didn't form a structured block."""
     target: str          # destination label

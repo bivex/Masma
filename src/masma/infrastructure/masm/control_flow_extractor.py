@@ -8,6 +8,7 @@ from masma.domain.control_flow import (
     ActionFlowStep,
     AlignFlowStep,
     CallFlowStep,
+    DataDeclFlowStep,
     ControlFlowDiagram,
     FileDecl,
     ForInFlowStep,
@@ -496,8 +497,8 @@ def _parse_sequence(
         if local_m is not None:
             typeinfo = local_m.group("typeinfo").strip()
             lowered_ti = typeinfo.lower()
-            # Only match stack-frame aliases, not regular EQU constants
             if "[bp" in lowered_ti or "ptr" in lowered_ti:
+                # Stack-frame alias
                 steps.append(LocalDeclFlowStep(
                     name=local_m.group("name"),
                     type_info=typeinfo,
@@ -505,6 +506,26 @@ def _parse_sequence(
                 ))
                 index += 1
                 continue
+            else:
+                # Inline constant/data declaration (label-as-proc style)
+                steps.append(DataDeclFlowStep(
+                    name=local_m.group("name"),
+                    type_info=typeinfo,
+                    source=compact_text(line.text),
+                ))
+                index += 1
+                continue
+
+        # Inline data declarations: "vulkan_instance dq 0", "buf db 16 dup(0)"
+        var_m = VARIABLE_RE.match(line.text)
+        if var_m is not None:
+            steps.append(DataDeclFlowStep(
+                name=var_m.group("name"),
+                type_info=compact_text(f"{var_m.group('type')}{var_m.group('tail')}"),
+                source=compact_text(line.text),
+            ))
+            index += 1
+            continue
 
         # Unstructured jumps — didn't form if/while/switch above
         jmp_m = _JMP_ANY_RE.match(line.text)
@@ -766,6 +787,9 @@ def _should_skip(text: str) -> bool:
     if lowered in IGNORED_ACTION_DIRECTIVES:
         return True
     if lowered.startswith("local "):
+        return True
+    # NASM-style section directives inside flat-style MASM (label-as-proc)
+    if lowered.startswith("section "):
         return True
     return False
 

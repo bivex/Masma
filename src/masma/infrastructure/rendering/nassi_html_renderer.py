@@ -13,6 +13,7 @@ from masma.domain.control_flow import (
     ControlFlowDiagram,
     ControlFlowStep,
     DeferFlowStep,
+    DataDeclFlowStep,
     DoCatchFlowStep,
     ForInFlowStep,
     GuardFlowStep,
@@ -396,6 +397,12 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .local-decl-icon {{ font-size: 12px; color: var(--muted); width: 16px; text-align: center; }}
       .local-decl-name {{ font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }}
       .local-decl-type {{ font-family: var(--mono); font-size: 11px; color: var(--muted); }}
+      /* ── Inline data declarations (label-as-proc / flat style) ── */
+      .ns-data-decl {{ background: rgba(86, 212, 221, 0.05); border-left: 3px solid rgba(86, 212, 221, 0.4); opacity: 0.8; }}
+      .ns-data-decl > .ns-label {{ display: flex; align-items: center; gap: 6px; font-style: italic; }}
+      .data-decl-icon {{ font-size: 11px; color: var(--teal); width: 16px; text-align: center; }}
+      .data-decl-name {{ font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--teal); }}
+      .data-decl-type {{ font-family: var(--mono); font-size: 11px; color: var(--muted); }}
       /* ── Jumps (unstructured goto / conditional branch) ── */
       .ns-jump {{ display: flex; align-items: stretch; }}
       .ns-jump > .ns-label {{ display: flex; align-items: center; gap: 6px; }}
@@ -1016,6 +1023,16 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 f'<span class="local-decl-icon">≡</span>'
                 f'<code class="local-decl-name">{escape(step.name)}</code>'
                 f'<code class="local-decl-type">{escape(step.type_info)}</code>'
+                "</div>"
+                "</div>"
+            )
+        if isinstance(step, DataDeclFlowStep):
+            return (
+                '<div class="ns-node ns-data-decl">'
+                f'<div class="ns-label" aria-label="Data {escape(step.name)}">'
+                f'<span class="data-decl-icon">◈</span>'
+                f'<code class="data-decl-name">{escape(step.name)}</code>'
+                f'<code class="data-decl-type">{escape(step.type_info)}</code>'
                 "</div>"
                 "</div>"
             )
