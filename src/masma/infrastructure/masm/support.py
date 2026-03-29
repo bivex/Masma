@@ -234,23 +234,38 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
         if seg_m and seg_m.group("kind"):  # 'identifier SEGMENT', not a .data/.code directive
             seg_name = seg_m.group("name")
             if not seg_name.startswith("."):
-                stack.append(("SEGMENT", seg_name, line.number))
+                # Skip inside MACRO/MACRO_LOOP/COND_ASM — template/conditional text
+                if not stack or stack[-1][0] not in ("MACRO", "MACRO_LOOP", "COND_ASM"):
+                    stack.append(("SEGMENT", seg_name, line.number))
             continue
 
         if struct_match := STRUCT_RE.match(line.text):
-            stack.append(("STRUCT", struct_match.group("name"), line.number))
+            if not stack or stack[-1][0] not in ("MACRO", "MACRO_LOOP", "COND_ASM"):
+                stack.append(("STRUCT", struct_match.group("name"), line.number))
             continue
 
         if union_match := UNION_RE.match(line.text):
-            stack.append(("STRUCT", union_match.group("name"), line.number))
+            if not stack or stack[-1][0] not in ("MACRO", "MACRO_LOOP", "COND_ASM"):
+                stack.append(("STRUCT", union_match.group("name"), line.number))
             continue
 
+        # ── ENDS ──
         if ends_match := ENDS_RE.match(line.text):
-            if not stack or stack[-1][0] not in ("STRUCT", "SEGMENT"):
-                diagnostics.append(_error("ENDS without matching STRUCT/UNION", line.number))
+            # Skip structural checks inside MACRO/MACRO_LOOP/COND_ASM —
+            # template text or conditionally compiled, not real nesting.
+            if stack and stack[-1][0] in ("MACRO", "MACRO_LOOP", "COND_ASM"):
                 continue
-            _, expected_name, _ = stack.pop()
-            if expected_name.lower() != ends_match.group("name").lower():
+            if not stack or stack[-1][0] not in ("STRUCT", "SEGMENT"):
+                # MASM pattern: @CurSeg ENDS closing an implicit segment
+                # opened by .data/.code — not a real error.
+                ends_name = ends_match.group("name")
+                if not ends_name.startswith("@"):
+                    diagnostics.append(_error("ENDS without matching STRUCT/UNION", line.number))
+                continue
+            kind, expected_name, _ = stack.pop()
+            # Name mismatch: error for STRUCT, accept for SEGMENT
+            # (MASM allows TEXTEQU/@CurSeg macro names for segments)
+            if kind == "STRUCT" and expected_name.lower() != ends_match.group("name").lower():
                 diagnostics.append(
                     _error(
                         f"ENDS closes '{ends_match.group('name')}' but '{expected_name}' is open",
@@ -313,6 +328,24 @@ def collect_syntax_diagnostics(lines: tuple[SourceLine, ...]) -> tuple[SyntaxDia
                 diagnostics.append(_error(".UNTIL without matching .REPEAT", line.number))
                 continue
             stack.pop()
+            continue
+
+        # Assembly-time conditional directives (IF/IFDEF/IFNDEF/…/ELSEIF/ELSE/ENDIF)
+        # These can contain conditionally-compiled SEGMENT/STRUCT that may not be
+        # balanced, so we track them and skip structural checks inside.
+        if COND_ASSEMBLE_RE.match(line.text):
+            stack.append(("COND_ASM", line.text.split()[0].upper(), line.number))
+            continue
+
+        if ELSEIF_BARE_RE.match(line.text) or ELSE_BARE_RE.match(line.text):
+            if stack and stack[-1][0] == "COND_ASM":
+                pass  # branch switch — stay in COND_ASM
+            continue
+
+        if ENDIF_BARE_RE.match(line.text):
+            if stack and stack[-1][0] == "COND_ASM":
+                stack.pop()
+            continue
 
     for kind, name, line_number in reversed(stack):
         diagnostics.append(_error(f"{kind} '{name}' is not closed", line_number))
