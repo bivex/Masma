@@ -151,6 +151,8 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             self.elements: list[StructuralElement] = []
             self._current_segment: str | None = None
             self._current_procedure: str | None = None
+            self._current_struct: str | None = None
+            self._current_macro: str | None = None
 
         def visitCompilationUnit(self, ctx):  # noqa: N802
             for line_ctx in ctx.line():
@@ -244,9 +246,11 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             return None
 
         def visitStructStartStmt(self, ctx):  # noqa: N802
+            name = ctx.identifier().getText()
+            self._current_struct = name
             self._append(
                 StructuralElementKind.STRUCT,
-                ctx.identifier().getText(),
+                name,
                 ctx.start.line,
                 container=self._current_segment,
                 signature=self._source_text(ctx),
@@ -254,9 +258,11 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             return None
 
         def visitUnionStartStmt(self, ctx):  # noqa: N802
+            name = ctx.identifier().getText()
+            self._current_struct = name
             self._append(
                 StructuralElementKind.STRUCT,
-                ctx.identifier().getText(),
+                name,
                 ctx.start.line,
                 container=self._current_segment,
                 signature=self._source_text(ctx),
@@ -264,14 +270,15 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             return None
 
         def visitStructEndStmt(self, ctx):  # noqa: N802
-            # ENDS closes a struct/union definition; no element to emit,
-            # but could reset struct context in future if tracked.
+            self._current_struct = None
             return None
 
         def visitMacroStartStmt(self, ctx):  # noqa: N802
+            name = ctx.identifier().getText()
+            self._current_macro = name
             self._append(
                 StructuralElementKind.MACRO,
-                ctx.identifier().getText(),
+                name,
                 ctx.start.line,
                 container=self._current_segment,
                 signature=self._source_text(ctx),
@@ -279,7 +286,7 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             return None
 
         def visitEndmStmt(self, ctx):  # noqa: N802
-            # ENDM closes a macro or macro-loop block; no element to emit.
+            self._current_macro = None
             return None
 
         def visitMacroLoopStmt(self, ctx):  # noqa: N802
@@ -315,6 +322,18 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             return None
 
         def visitDataDeclStmt(self, ctx):  # noqa: N802
+            if self._current_macro is not None:
+                return None  # data inside macro body — not a real variable
+            if self._current_struct is not None:
+                # struct/union field — container is the struct, kind always VARIABLE
+                self._append(
+                    StructuralElementKind.VARIABLE,
+                    ctx.identifier().getText(),
+                    ctx.start.line,
+                    container=self._current_struct,
+                    signature=self._source_text(ctx),
+                )
+                return None
             kind = (
                 StructuralElementKind.CONSTANT
                 if (self._current_segment or "").lower() == ".const"
