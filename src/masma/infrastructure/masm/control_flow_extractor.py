@@ -497,7 +497,7 @@ def _parse_sequence(
         if local_m is not None:
             typeinfo = local_m.group("typeinfo").strip()
             lowered_ti = typeinfo.lower()
-            if "[bp" in lowered_ti or "ptr" in lowered_ti:
+            if lowered_ti.startswith("[") or "ptr" in lowered_ti:
                 # Stack-frame alias
                 steps.append(LocalDeclFlowStep(
                     name=local_m.group("name"),
@@ -542,7 +542,7 @@ def _parse_sequence(
         if cj_m is not None:
             steps.append(JumpFlowStep(
                 target=cj_m.group("label"),
-                condition=cj_m.group("op").lower(),
+                condition=cj_m.group("op")[1:].lower(),
                 source=compact_text(line.text),
             ))
             index += 1

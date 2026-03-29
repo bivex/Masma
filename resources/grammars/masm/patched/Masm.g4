@@ -15,7 +15,7 @@
 grammar Masm;
 
 compilationUnit
-    : (line | EOL)* EOF
+    : (line | EOL)* statement? EOF
     ;
 
 line

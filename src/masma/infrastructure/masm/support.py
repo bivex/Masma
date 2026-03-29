@@ -23,7 +23,7 @@ STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struc?t?\b$", re.IGNORECASE)
 ENDS_RE = re.compile(rf"^(?P<name>{_NAME})\s+ends\b$", re.IGNORECASE)
 UNION_RE = re.compile(rf"^(?P<name>{_NAME})\s+union\b", re.IGNORECASE)
 MACRO_RE = re.compile(rf"^(?P<name>{_NAME})\s+macro\b(?P<tail>.*)$", re.IGNORECASE)
-ENDM_RE = re.compile(r"^endm\b$", re.IGNORECASE)
+ENDM_RE = re.compile(r"^endm\b", re.IGNORECASE)
 # Assembly-time conditional directives (no leading dot, unlike runtime .IF/.ENDIF)
 COND_ASSEMBLE_RE = re.compile(
     r"^(?:ifdef|ifndef|ifdif|ifdifi|ifidn|ifidni|ifb|ifnb|if)\b",
