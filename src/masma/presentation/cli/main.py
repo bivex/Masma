@@ -204,148 +204,417 @@ def _render_directory_index(
     root_path: str,
     written_diagrams: tuple[_WrittenNassiDiagram, ...],
 ) -> str:
-    rows = "".join(
-        (
-            "<tr>"
-            f'<td><a href="{escape(diagram.relative_output_path)}">{escape(diagram.relative_source_path)}</a></td>'
-            f"<td>{diagram.procedure_count}</td>"
-            f"<td>{escape(', '.join(diagram.procedure_names) if diagram.procedure_names else 'No procedures found')}</td>"
-            "</tr>"
-        )
-        for diagram in written_diagrams
+    total_procs = sum(d.procedure_count for d in written_diagrams)
+
+    # Build JSON data blob for Alpine.js — one entry per file
+    files_data = json.dumps(
+        [
+            {
+                "path": d.relative_source_path,
+                "href": d.relative_output_path,
+                "procs": list(d.procedure_names),
+                "count": d.procedure_count,
+            }
+            for d in written_diagrams
+        ],
+        ensure_ascii=False,
     )
-    if not rows:
-        rows = '<tr><td colspan="3">No diagrams were generated.</td></tr>'
 
     return f"""<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Masma NSD Index</title>
-    <style>
-      :root {{
-        --line: #22364d;
-        --page: #d9e0e7;
-        --panel: #f6f1e1;
-        --panel-2: #fffdf8;
-        --text: #112033;
-        --muted: #5f6e7c;
-        --blue: #1676dc;
-        --blue-dark: #0b57ae;
-        --shadow: 0 18px 40px rgba(21, 34, 52, 0.18);
-      }}
-      * {{ box-sizing: border-box; }}
-      body {{
-        margin: 0;
-        padding: 24px;
-        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-        color: var(--text);
-        background: linear-gradient(180deg, #e3e8ee 0%, var(--page) 100%);
-      }}
-      .window {{
-        max-width: 1120px;
-        margin: 0 auto;
-        border: 2px solid var(--line);
-        background: var(--panel);
-        box-shadow: var(--shadow);
-      }}
-      .titlebar {{
-        padding: 8px 14px;
-        color: #ffffff;
-        font-size: 18px;
-        font-weight: 700;
-        background: linear-gradient(180deg, #3394ff 0%, var(--blue) 48%, var(--blue-dark) 100%);
-      }}
-      .body {{
-        padding: 16px;
-      }}
-      .meta {{
-        margin: 0 0 14px;
-        color: var(--muted);
-        font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
-        font-size: 12px;
-        overflow-wrap: anywhere;
-      }}
-      table {{
-        width: 100%;
-        border-collapse: collapse;
-        background: var(--panel-2);
-      }}
-      th, td {{
-        padding: 10px 12px;
-        border: 1px solid var(--line);
-        text-align: left;
-        vertical-align: top;
-      }}
-      th {{
-        color: #ffffff;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        background: linear-gradient(180deg, var(--blue) 0%, var(--blue-dark) 100%);
-      }}
-      td:nth-child(2) {{
-        width: 110px;
-        text-align: center;
-        white-space: nowrap;
-      }}
-      a {{
-        color: #0f58ad;
-        text-decoration: none;
-        font-weight: 700;
-      }}
-      a:hover {{
-        text-decoration: underline;
-      }}
-      @media (max-width: 800px) {{
-        body {{ padding: 12px; }}
-        .body {{ padding: 10px; }}
-        table, thead, tbody, tr, th, td {{
-          display: block;
-        }}
-        thead {{
-          display: none;
-        }}
-        tr {{
-          margin-bottom: 12px;
-          border: 1px solid var(--line);
-          background: var(--panel-2);
-        }}
-        td {{
-          border: 0;
-          border-top: 1px solid var(--line);
-        }}
-        td:first-child {{
-          border-top: 0;
-        }}
-        td:nth-child(2) {{
-          width: auto;
-          text-align: left;
-        }}
-      }}
-    </style>
-  </head>
-  <body>
-    <div class="window">
-      <div class="titlebar">Masma NSD Index</div>
-      <div class="body">
-        <p class="meta">{escape(root_path)}</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Source</th>
-              <th>Functions</th>
-              <th>Names</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows}
-          </tbody>
-        </table>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Masma — {escape(Path(root_path).name)}</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <style>
+    :root {{
+      --bg:          #0a0f18;
+      --bg-accent:   #10182a;
+      --surface:     #111827;
+      --surface-2:   #172131;
+      --surface-3:   #1c2940;
+      --border:      #2b3b59;
+      --border-soft: #182338;
+      --text:        #cfd8f6;
+      --text-bright: #f4f7ff;
+      --muted:       #8e9bbb;
+      --blue:        #82aaff;
+      --blue-dim:    #1c2e55;
+      --green:       #a6da95;
+      --green-dim:   #163628;
+      --amber:       #f1ca7a;
+      --amber-dim:   #39290f;
+      --mono: "JetBrains Mono","Fira Code","Cascadia Code",monospace;
+      --ui:   "IBM Plex Sans",-apple-system,"Segoe UI",system-ui,sans-serif;
+    }}
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{
+      font-family: var(--ui);
+      font-size: 14px;
+      color: var(--text);
+      background: radial-gradient(circle at top, rgba(130,170,255,.10) 0%, transparent 28%),
+                  var(--bg);
+      min-height: 100vh;
+    }}
+
+    /* ── Header ─────────────────────────────────────────── */
+    .header {{
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,15,24,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }}
+    .header-top {{
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }}
+    .logo {{
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: .06em;
+      flex-shrink: 0;
+    }}
+    .root-path {{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }}
+    .stats {{
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }}
+    .stat-chip {{
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }}
+    .stat-chip.files  {{ background: var(--blue-dim);  color: var(--blue);  }}
+    .stat-chip.procs  {{ background: var(--green-dim); color: var(--green); }}
+    .stat-chip.shown  {{ background: var(--surface-3); color: var(--muted); }}
+    .search-wrap {{
+      position: relative;
+    }}
+    .search-wrap svg {{
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }}
+    .search {{
+      width: 100%;
+      padding: 9px 14px 9px 38px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-bright);
+      font-family: var(--ui);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s;
+    }}
+    .search:focus {{ border-color: var(--blue); }}
+    .search::placeholder {{ color: var(--muted); }}
+
+    /* ── Main content ────────────────────────────────────── */
+    .content {{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }}
+
+    /* ── Directory group ─────────────────────────────────── */
+    .dir-group {{
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }}
+    .dir-header {{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--bg-accent);
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid var(--border-soft);
+      transition: background .12s;
+    }}
+    .dir-header:hover {{ background: var(--surface-2); }}
+    .dir-caret {{
+      color: var(--muted);
+      transition: transform .18s;
+      flex-shrink: 0;
+    }}
+    .dir-caret.open {{ transform: rotate(90deg); }}
+    .dir-icon {{ color: var(--amber); flex-shrink: 0; }}
+    .dir-name {{
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-bright);
+      flex: 1;
+    }}
+    .dir-meta {{
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }}
+    .dir-body {{
+      display: flex;
+      flex-direction: column;
+    }}
+
+    /* ── File row ────────────────────────────────────────── */
+    .file-row {{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 4px 12px;
+      padding: 10px 16px 10px 40px;
+      border-bottom: 1px solid var(--border-soft);
+      transition: background .1s;
+    }}
+    .file-row:last-child {{ border-bottom: 0; }}
+    .file-row:hover {{ background: var(--surface-2); }}
+    .file-link {{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 500;
+      grid-row: 1;
+      grid-column: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }}
+    .file-link:hover {{ color: var(--text-bright); text-decoration: underline; }}
+    .file-link svg {{ color: var(--muted); flex-shrink: 0; }}
+    .proc-count {{
+      grid-row: 1;
+      grid-column: 2;
+      align-self: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--blue-dim);
+      color: var(--blue);
+      white-space: nowrap;
+    }}
+    .proc-count.zero {{
+      background: var(--surface-3);
+      color: var(--muted);
+    }}
+    .proc-pills {{
+      grid-row: 2;
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }}
+    .pill {{
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--surface-3);
+      color: var(--muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .1s;
+    }}
+    .pill:hover {{
+      background: var(--blue-dim);
+      color: var(--blue);
+      border-color: var(--border);
+    }}
+    .pill.match {{
+      background: var(--green-dim);
+      color: var(--green);
+      border-color: var(--green-dim);
+    }}
+
+    /* ── Empty state ─────────────────────────────────────── */
+    .empty {{
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--muted);
+      font-size: 15px;
+    }}
+    .empty svg {{ margin-bottom: 16px; color: var(--border); }}
+  </style>
+</head>
+<body x-data="app()" x-init="init()">
+
+  <header class="header">
+    <div class="header-top">
+      <span class="logo">MASMA</span>
+      <span class="root-path" title="{escape(root_path)}">{escape(root_path)}</span>
+      <div class="stats">
+        <span class="stat-chip files">{len(written_diagrams)} files</span>
+        <span class="stat-chip procs">{total_procs} procedures</span>
+        <span class="stat-chip shown" x-text="shownLabel"></span>
       </div>
     </div>
-  </body>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        class="search"
+        type="search"
+        placeholder="Filter by file name or procedure…"
+        x-model.debounce.120ms="query"
+        x-ref="searchInput"
+        @keydown.escape="query = ''"
+      >
+    </div>
+  </header>
+
+  <main class="content">
+    <template x-for="group in visibleGroups" :key="group.dir">
+      <div class="dir-group">
+        <div class="dir-header" @click="toggleDir(group.dir)">
+          <svg class="dir-caret" :class="{{ open: openDirs.has(group.dir) }}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          <svg class="dir-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/>
+          </svg>
+          <span class="dir-name" x-text="group.dir || '(root)'"></span>
+          <span class="dir-meta" x-text="group.files.length + ' files · ' + group.totalProcs + ' procs'"></span>
+        </div>
+        <div class="dir-body" x-show="openDirs.has(group.dir)" x-collapse.duration.200ms>
+          <template x-for="file in group.files" :key="file.path">
+            <div class="file-row">
+              <a class="file-link" :href="file.href">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span x-text="file.name"></span>
+              </a>
+              <span class="proc-count" :class="{{ zero: file.count === 0 }}" x-text="file.count + (file.count === 1 ? ' proc' : ' procs')"></span>
+              <div class="proc-pills" x-show="file.procs.length > 0">
+                <template x-for="proc in file.procs" :key="proc">
+                  <span
+                    class="pill"
+                    :class="{{ match: query && proc.toLowerCase().includes(query.toLowerCase()) }}"
+                    x-text="proc"
+                    @click="query = proc"
+                    :title="'Filter by ' + proc"
+                  ></span>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <div class="empty" x-show="visibleGroups.length === 0">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <p>No results for &ldquo;<span x-text="query"></span>&rdquo;</p>
+    </div>
+  </main>
+
+  <script>
+    const FILES = {files_data};
+
+    function app() {{
+      return {{
+        query: '',
+        openDirs: new Set(),
+        allGroups: [],
+        visibleGroups: [],
+        shownLabel: '',
+
+        init() {{
+          // Group files by directory
+          const dirMap = new Map();
+          for (const f of FILES) {{
+            const parts = f.path.split('/');
+            const name  = parts.pop();
+            const dir   = parts.join('/');
+            if (!dirMap.has(dir)) dirMap.set(dir, []);
+            dirMap.get(dir).push({{ ...f, name, dir }});
+          }}
+          this.allGroups = [...dirMap.entries()].map(([dir, files]) => ({{
+            dir,
+            files,
+            totalProcs: files.reduce((s, f) => s + f.count, 0),
+          }}));
+          // Open all dirs by default
+          for (const g of this.allGroups) this.openDirs.add(g.dir);
+          this.applyFilter();
+          this.$watch('query', () => this.applyFilter());
+        }},
+
+        applyFilter() {{
+          const q = this.query.toLowerCase().trim();
+          if (!q) {{
+            this.visibleGroups = this.allGroups;
+            this.shownLabel = '';
+            return;
+          }}
+          let totalShown = 0;
+          this.visibleGroups = this.allGroups
+            .map(g => {{
+              const files = g.files.filter(f =>
+                f.name.toLowerCase().includes(q) ||
+                f.path.toLowerCase().includes(q) ||
+                f.procs.some(p => p.toLowerCase().includes(q))
+              );
+              totalShown += files.length;
+              return {{ ...g, files }};
+            }})
+            .filter(g => g.files.length > 0);
+          // Auto-expand dirs that match
+          for (const g of this.visibleGroups) this.openDirs.add(g.dir);
+          this.shownLabel = totalShown + ' shown';
+        }},
+
+        toggleDir(dir) {{
+          if (this.openDirs.has(dir)) this.openDirs.delete(dir);
+          else this.openDirs.add(dir);
+          // Trigger Alpine reactivity on Set
+          this.openDirs = new Set(this.openDirs);
+        }},
+      }};
+    }}
+  </script>
+</body>
 </html>
 """
 
