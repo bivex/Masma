@@ -170,6 +170,7 @@ lineAtom
     | dataType
     | structuredDirective
     | anyKeyword
+    | simpleSegmentStmt
     ;
 
 // Allows reserved keywords to appear as operands inside instruction / data lines.

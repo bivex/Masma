@@ -148,7 +148,10 @@ def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
 
     Handles MASM ``comment <delim>...<delim>`` multi-line comment blocks by
     blanking out every line inside the block (including the opening/closing
-    lines).  The line numbers are preserved so diagnostics stay accurate.
+    lines).  Also blanks out lines inside ``IF 0 ... ENDIF`` and
+    ``IF FALSE ... ENDIF`` blocks (used as block comments in MASM).
+
+    The line numbers are preserved so diagnostics stay accurate.
 
     The ``comment`` field on each SourceLine holds the extracted comment text
     (without the leading ``;``) so it can be rendered later.
@@ -157,8 +160,17 @@ def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
     in_block = False
     block_delim: str = ""
 
-    for number, raw_line in enumerate(source_text.splitlines(), start=1):
+    # Pass 1: identify IF 0 / IF FALSE line ranges to blank out
+    raw_lines = source_text.splitlines()
+    blank_ranges = _find_if_false_ranges(raw_lines)
+
+    for number, raw_line in enumerate(raw_lines, start=1):
         stripped = raw_line.strip()
+
+        # Blank out lines inside IF 0 ... ENDIF blocks
+        if number in blank_ranges:
+            lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=""))
+            continue
 
         if in_block:
             if stripped == block_delim:
@@ -178,6 +190,49 @@ def iter_source_lines(source_text: str) -> tuple[SourceLine, ...]:
         lines.append(SourceLine(number=number, raw=raw_line.rstrip(), text=text, comment=comment))
 
     return tuple(lines)
+
+
+# Patterns for MASM "block comment via IF 0" / "IF FALSE"
+_IF_FALSE_START_RE = re.compile(
+    r"^if\s+(?:0|false|0h)\b", re.IGNORECASE,
+)
+_ENDIF_BARE_OR_DOT_RE = re.compile(
+    r"^(?:endif|\.endif)\b", re.IGNORECASE,
+)
+_IF_ANY_RE = re.compile(
+    r"^if\b", re.IGNORECASE,
+)
+
+
+def _find_if_false_ranges(raw_lines: list[str]) -> set[int]:
+    """Return 1-based line numbers inside ``IF 0 ... ENDIF`` blocks.
+
+    Only blanks out top-level ``IF 0`` / ``IF FALSE`` blocks (depth=0 at
+    start).  Nested ``IF`` inside an IF-0 block are also blanked.
+    """
+    blank: set[int] = set()
+    i = 0
+    while i < len(raw_lines):
+        stripped = raw_lines[i].strip()
+        if _IF_FALSE_START_RE.match(stripped):
+            # Found IF 0 / IF FALSE — blank from here to matching ENDIF
+            blank.add(i + 1)  # 1-based
+            depth = 1
+            j = i + 1
+            while j < len(raw_lines):
+                s = raw_lines[j].strip()
+                blank.add(j + 1)
+                if _IF_ANY_RE.match(s):
+                    depth += 1
+                elif _ENDIF_BARE_OR_DOT_RE.match(s):
+                    depth -= 1
+                    if depth == 0:
+                        break
+                j += 1
+            i = j + 1
+            continue
+        i += 1
+    return blank
 
 
 def compact_text(text: str, *, limit: int = 96) -> str:
