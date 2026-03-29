@@ -44,11 +44,9 @@ class FileSystemSourceRepository(SourceRepository):
 
     def _load_source_unit(self, path: Path) -> SourceUnit:
         try:
-            content = path.read_text(encoding="utf-8")
+            content = path.read_text(encoding="utf-8", errors="replace")
         except OSError as error:
             raise SourceAccessError(f"unable to read source file {path}: {error}") from error
-        except UnicodeDecodeError as error:
-            raise SourceAccessError(f"source file is not valid UTF-8 {path}: {error}") from error
 
         normalized = str(path)
         return SourceUnit(
