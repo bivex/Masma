@@ -790,6 +790,10 @@ def _should_skip(text: str) -> bool:
     lowered = text.lower()
     if lowered in IGNORED_ACTION_DIRECTIVES:
         return True
+    # Parameterised directives: "assume cs:nothing", "end label", etc.
+    first_word = lowered.split()[0] if lowered else ""
+    if first_word in IGNORED_ACTION_DIRECTIVES:
+        return True
     if lowered.startswith("local "):
         return True
     # NASM-style section directives inside flat-style MASM (label-as-proc)

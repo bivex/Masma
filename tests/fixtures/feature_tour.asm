@@ -384,4 +384,18 @@ copy_loop:
     ret
 demo_comments ENDP
 
+; ─── 21. OPTION directive — bare prologue/epilogue control ──────────────────
+; option PROLOGUE:NONE / EPILOGUE:NONE disables auto frame generation.
+; These are filtered out of the control flow (passthrough directives).
+malloc PROC dwBytes:DWORD
+    ; Allocate from the current process heap
+    option PROLOGUE:NONE
+    option EPILOGUE:NONE
+    invoke GetProcessHeap
+    invoke HeapAlloc, eax, 0, dwBytes
+    ret (sizeof DWORD)
+    option PROLOGUE:PROLOGUEDEF
+    option EPILOGUE:EPILOGUEDEF
+malloc ENDP
+
 END demo_init

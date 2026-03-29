@@ -85,7 +85,6 @@ IGNORED_ACTION_DIRECTIVES = {
     ".const",
     ".stack",
     ".model",
-    "option",
     "assume",
     "end",
 }
@@ -368,6 +367,10 @@ def scan_procedure_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock
         seg = classify_segment(line) if line.text else None
         if seg is not None:
             current_segment = seg
+
+        # Named segment ENDS resets current_segment (PROC after ENDS goes to .code)
+        if line.text and ENDS_RE.match(line.text):
+            current_segment = None
 
         if current_name is None:
             proc_match = PROC_RE.match(line.text) or CPROC_RE.match(line.text)

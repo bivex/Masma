@@ -1132,7 +1132,8 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 "</div>"
             )
         if isinstance(step, ActionFlowStep):
-            is_ret = step.label.lower() in ("ret", "retn", "retf")
+            lowered = step.label.lower()
+            is_ret = lowered in ("ret", "retn", "retf") or lowered.startswith("ret ") or lowered.startswith("retn ") or lowered.startswith("retf ")
             css = "ns-node ns-action ns-ret" if is_ret else "ns-node ns-action"
             return (
                 f'<div class="{css}">'
