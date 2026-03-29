@@ -5,9 +5,28 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "masma"
 version = "0.1.0"
-description = "A hexagonal MASM parser and Nassi-Shneiderman diagram generator."
+description = "MASM assembly parser and Nassi-Shneiderman diagram generator for x86 reverse engineering and code analysis."
 readme = "README.md"
 requires-python = ">=3.13"
+license = {text = "MIT"}
+keywords = [
+  "masm", "assembly", "x86", "nassi-shneiderman", "control-flow",
+  "reverse-engineering", "code-analysis", "antlr", "parser",
+  "structured-programming", "flowchart", "diagram", "asm",
+  "disassembly", "static-analysis", "visualization",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Software Development :: Disassemblers",
+  "Topic :: Software Development :: Code Generators",
+  "Topic :: Scientific/Engineering :: Visualization",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Assembly",
+  "Operating System :: OS Independent",
+]
 dependencies = [
   "antlr4-python3-runtime==4.13.2",
 ]
