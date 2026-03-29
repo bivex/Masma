@@ -23,7 +23,9 @@ from masma.infrastructure.antlr.runtime import (
 from masma.infrastructure.masm.support import (
     EQU_RE,
     EXTERN_RE,
+    EXTERN_NAMES_RE,
     INCLUDE_RE,
+    PUBLIC_RE,
     LABEL_RE,
     MACRO_RE,
     CEND_RE,
@@ -199,6 +201,48 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             )
             return None
 
+        def visitTypedefStmt(self, ctx):  # noqa: N802
+            self._append(
+                StructuralElementKind.CONSTANT,
+                ctx.identifier().getText(),
+                ctx.start.line,
+                container=self._current_segment,
+                signature=self._source_text(ctx),
+            )
+            return None
+
+        def visitExternStmt(self, ctx):  # noqa: N802
+            source_text = self._source_text(ctx)
+            match = EXTERN_NAMES_RE.match(source_text)
+            if match is not None:
+                # "EXTERN foo:PROC, bar:DWORD" → extract each name before ':'
+                for entry in (e.strip() for e in match.group("names").split(",")):
+                    name = entry.split(":")[0].strip()
+                    if name:
+                        self._append(
+                            StructuralElementKind.EXTERNAL,
+                            name,
+                            ctx.start.line,
+                            container=self._current_segment,
+                            signature=source_text,
+                        )
+            return None
+
+        def visitPublicStmt(self, ctx):  # noqa: N802
+            source_text = self._source_text(ctx)
+            match = PUBLIC_RE.match(source_text)
+            if match is not None:
+                for name in (n.strip() for n in match.group("names").split(",")):
+                    if name:
+                        self._append(
+                            StructuralElementKind.PUBLIC,
+                            name,
+                            ctx.start.line,
+                            container=self._current_segment,
+                            signature=name,
+                        )
+            return None
+
         def visitStructStartStmt(self, ctx):  # noqa: N802
             self._append(
                 StructuralElementKind.STRUCT,
@@ -209,6 +253,21 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
             )
             return None
 
+        def visitUnionStartStmt(self, ctx):  # noqa: N802
+            self._append(
+                StructuralElementKind.STRUCT,
+                ctx.identifier().getText(),
+                ctx.start.line,
+                container=self._current_segment,
+                signature=self._source_text(ctx),
+            )
+            return None
+
+        def visitStructEndStmt(self, ctx):  # noqa: N802
+            # ENDS closes a struct/union definition; no element to emit,
+            # but could reset struct context in future if tracked.
+            return None
+
         def visitMacroStartStmt(self, ctx):  # noqa: N802
             self._append(
                 StructuralElementKind.MACRO,
@@ -217,6 +276,15 @@ def _build_structure_visitor(visitor_base: type, lines_by_number: dict[int, Sour
                 container=self._current_segment,
                 signature=self._source_text(ctx),
             )
+            return None
+
+        def visitEndmStmt(self, ctx):  # noqa: N802
+            # ENDM closes a macro or macro-loop block; no element to emit.
+            return None
+
+        def visitMacroLoopStmt(self, ctx):  # noqa: N802
+            # FOR/FORC/IRP/IRPC/REPT/WHILE_BARE — not structural elements,
+            # just consume so the node doesn't fall through to visitChildren.
             return None
 
         def visitProcStartStmt(self, ctx):  # noqa: N802

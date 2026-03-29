@@ -8,6 +8,9 @@
  * `STRUCT/ENDS`, `UNION/ENDS`, `MACRO/ENDM`, `TYPEDEF`, labels,
  * data declarations, structured directives, conditional-assembly directives,
  * macro-loop directives (FOR/IRP/REPT/WHILE), and free-form instruction lines.
+ *
+ * Added: EXTERN/EXTERNDEF/PUBLIC statements, ALIGN/ASSUME/OPTION/ORG
+ * passthrough directives, full ELSEIF* variant set.
  */
 grammar Masm;
 
@@ -23,6 +26,8 @@ statement
     : includeStmt
     | equStmt
     | typedefStmt
+    | externStmt
+    | publicStmt
     | namedSegmentStmt
     | simpleSegmentStmt
     | structStartStmt
@@ -39,12 +44,25 @@ statement
     | labelStmt
     | dataDeclStmt
     | structuredDirectiveStmt
+    | passThroughDirectiveStmt
     | endStmt
     | instructionStmt
     ;
 
 includeStmt
     : (INCLUDE | INCLUDELIB) lineItems?
+    ;
+
+externStmt
+    : (EXTERN | EXTERNDEF) lineItems?
+    ;
+
+publicStmt
+    : PUBLIC lineItems?
+    ;
+
+passThroughDirectiveStmt
+    : (ALIGN | ASSUME | OPTION | ORG | EVEN) lineItems?
     ;
 
 equStmt
@@ -88,7 +106,17 @@ endmStmt
     ;
 
 condAssembleStmt
-    : (IFDEF | IFNDEF | IFDIF | IFDIFI | IFIDN | IFIDNI | IFB | IFNB | IF1 | IF2 | IF_BARE | ELSEIF_BARE | ELSEIFDEF | ELSEIFNDEF) lineItems?
+    : ( IFDEF | IFNDEF
+      | IFDIF | IFDIFI | IFIDN | IFIDNI
+      | IFB | IFNB
+      | IF1 | IF2
+      | IF_BARE
+      | ELSEIF_BARE
+      | ELSEIFDEF | ELSEIFNDEF
+      | ELSEIFDIF | ELSEIFDIFI | ELSEIFIDN | ELSEIFIDNI
+      | ELSEIFB | ELSEIFNB
+      | ELSEIF1 | ELSEIF2
+      ) lineItems?
     ;
 
 condAssembleElse
@@ -141,6 +169,23 @@ lineAtom
     | COLON
     | dataType
     | structuredDirective
+    | anyKeyword
+    ;
+
+// Allows reserved keywords to appear as operands inside instruction / data lines.
+// e.g. "EXTERN foo:PROC", "ASSUME cs:CODE", "mov ax, OFFSET SEGMENT"
+anyKeyword
+    : INCLUDE | INCLUDELIB | EXTERN | EXTERNDEF | PUBLIC
+    | ALIGN | ASSUME | OPTION | ORG | EVEN
+    | EQU | TYPEDEF | PROC | ENDP | STRUCT | UNION | ENDS
+    | MACRO | ENDM | END | SEGMENT
+    | IFDEF | IFNDEF | IFDIF | IFDIFI | IFIDN | IFIDNI | IFB | IFNB
+    | IF1 | IF2 | IF_BARE
+    | ELSEIF_BARE | ELSEIFDEF | ELSEIFNDEF
+    | ELSEIFDIF | ELSEIFDIFI | ELSEIFIDN | ELSEIFIDNI | ELSEIFB | ELSEIFNB
+    | ELSEIF1 | ELSEIF2
+    | ELSE_BARE | ENDIF_BARE
+    | FOR | FORC | IRP | IRPC | REPT | WHILE_BARE
     ;
 
 identifier
@@ -149,6 +194,14 @@ identifier
 
 INCLUDE         : I N C L U D E ;
 INCLUDELIB      : I N C L U D E L I B ;
+EXTERN          : E X T E R N ;
+EXTERNDEF       : E X T E R N D E F ;
+PUBLIC          : P U B L I C ;
+ALIGN           : A L I G N ;
+ASSUME          : A S S U M E ;
+OPTION          : O P T I O N ;
+ORG             : O R G ;
+EVEN            : E V E N ;
 EQU             : E Q U ;
 TYPEDEF         : T Y P E D E F ;
 PROC            : P R O C ;
@@ -176,6 +229,14 @@ IF_BARE         : I F ;
 ELSEIF_BARE     : E L S E I F ;
 ELSEIFDEF       : E L S E I F D E F ;
 ELSEIFNDEF      : E L S E I F N D E F ;
+ELSEIFDIF       : E L S E I F D I F ;
+ELSEIFDIFI      : E L S E I F D I F I ;
+ELSEIFIDN       : E L S E I F I D N ;
+ELSEIFIDNI      : E L S E I F I D N I ;
+ELSEIFB         : E L S E I F B ;
+ELSEIFNB        : E L S E I F N B ;
+ELSEIF1         : E L S E I F '1' ;
+ELSEIF2         : E L S E I F '2' ;
 ELSE_BARE       : E L S E ;
 ENDIF_BARE      : E N D I F ;
 

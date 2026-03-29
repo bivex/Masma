@@ -29,6 +29,21 @@ class MasmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MasmParser#externStmt.
+    def visitExternStmt(self, ctx:MasmParser.ExternStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MasmParser#publicStmt.
+    def visitPublicStmt(self, ctx:MasmParser.PublicStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MasmParser#passThroughDirectiveStmt.
+    def visitPassThroughDirectiveStmt(self, ctx:MasmParser.PassThroughDirectiveStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MasmParser#equStmt.
     def visitEquStmt(self, ctx:MasmParser.EquStmtContext):
         return self.visitChildren(ctx)
@@ -136,6 +151,11 @@ class MasmVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MasmParser#lineAtom.
     def visitLineAtom(self, ctx:MasmParser.LineAtomContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MasmParser#anyKeyword.
+    def visitAnyKeyword(self, ctx:MasmParser.AnyKeywordContext):
         return self.visitChildren(ctx)
 
 
