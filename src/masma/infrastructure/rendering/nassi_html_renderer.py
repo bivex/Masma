@@ -416,6 +416,13 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .ns-invoke  > .ns-label {{ background: rgba(166, 218, 149, 0.10); }}
       .ns-ret {{ border-left: 3px solid var(--red); }}
       .ns-ret > .ns-label {{ background: rgba(255, 147, 169, 0.08); }}
+      /* ── Breakpoint / halt instructions ── */
+      .ns-brk {{ border-left: 3px solid var(--red); background: rgba(255, 93, 109, 0.06); }}
+      .ns-brk > .ns-label {{ background: rgba(255, 93, 109, 0.10); }}
+      .ns-brk .brk-icon {{ color: var(--red); font-weight: 700; margin-right: 4px; }}
+      .ns-hlt {{ border-left: 3px solid var(--orange); background: rgba(255, 184, 107, 0.05); }}
+      .ns-hlt > .ns-label {{ background: rgba(255, 184, 107, 0.08); }}
+      .ns-hlt .hlt-icon {{ color: var(--orange); font-weight: 700; margin-right: 4px; }}
       /* ── Stack operations ── */
       .ns-stack {{ background: var(--surface-2); border-left: 3px solid var(--amber); }}
       .ns-stack > .ns-label {{ background: rgba(241, 202, 122, 0.08); display: flex; align-items: center; gap: 8px; }}
@@ -1162,6 +1169,26 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                     '<div class="ns-pragma" aria-label="Pragma directive">'
                     f'<span class="pragma-icon">⚙</span>'
                     f'<code class="pragma-text">{escape(step.label)}</code>'
+                    "</div>"
+                )
+            # int 3 / int3 — software breakpoint (red stop)
+            if lowered in ("int 3", "int3", "int 3h", "int3h", "break", "breakpoint"):
+                return (
+                    '<div class="ns-node ns-action ns-brk" aria-label="Breakpoint">'
+                    '<div class="ns-label">'
+                    f'<span class="brk-icon">⬢</span>'
+                    f'<code class="action-text">{escape(step.label)}</code>'
+                    "</div>"
+                    "</div>"
+                )
+            # hlt / ud2 / stop — halt-type instructions (orange stop)
+            if lowered in ("hlt", "ud2", "ud2b"):
+                return (
+                    '<div class="ns-node ns-action ns-hlt" aria-label="Halt">'
+                    '<div class="ns-label">'
+                    f'<span class="hlt-icon">■</span>'
+                    f'<code class="action-text">{escape(step.label)}</code>'
+                    "</div>"
                     "</div>"
                 )
             is_ret = lowered in ("ret", "retn", "retf") or lowered.startswith("ret ") or lowered.startswith("retn ") or lowered.startswith("retf ")

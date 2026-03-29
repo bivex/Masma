@@ -398,4 +398,15 @@ malloc PROC dwBytes:DWORD
     option EPILOGUE:EPILOGUEDEF
 malloc ENDP
 
+; ─── 22. Breakpoint & halt instructions ─────────────────────────────────────
+; int 3 — software breakpoint (red stop icon)
+; hlt / ud2 — CPU halt/undefined (orange stop icon)
+demo_stop PROC
+    mov  eax, 0
+    int  3
+    hlt
+    ud2
+    ret
+demo_stop ENDP
+
 END demo_init
