@@ -70,6 +70,11 @@ PUBLIC_RE = re.compile(
     rf"^public\s+(?P<names>.+)$",
     re.IGNORECASE,
 )
+# TYPEDEF — type alias: "HANDLE TYPEDEF DWORD", "LPVOID TYPEDEF PTR"
+TYPEDEF_RE = re.compile(
+    rf"^(?P<name>{_NAME})\s+typedef\b(?P<def>.*)$",
+    re.IGNORECASE,
+)
 
 DATA_DIRECTIVES = {".data", ".data?", ".const"}
 CODE_DIRECTIVES = {".code"}

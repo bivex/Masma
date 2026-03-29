@@ -193,4 +193,5 @@ class ControlFlowDiagram:
     segments: tuple[FileDecl, ...] = ()
     constants: tuple[FileDecl, ...] = ()
     variables: tuple[FileDecl, ...] = ()
+    typedefs: tuple[FileDecl, ...] = ()
 

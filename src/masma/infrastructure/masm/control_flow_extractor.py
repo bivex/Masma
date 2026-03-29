@@ -35,6 +35,7 @@ from masma.infrastructure.masm.support import (
     COND_ASSEMBLE_PARSE_RE,
     EQU_RE,
     EXTERN_RE,
+    EXTERN_NAMES_RE,
     ELSE_BARE_RE,
     ELSEIF_BARE_RE,
     ELSEIF_RE,
@@ -47,6 +48,7 @@ from masma.infrastructure.masm.support import (
     INCLUDE_RE,
     LABEL_RE,
     MACRO_RE,
+    TYPEDEF_RE,
     PROC_RE,
     PUBLIC_RE,
     REPEAT_RE,
@@ -166,12 +168,24 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
         segments: list[FileDecl] = []
         constants: list[FileDecl] = []
         variables: list[FileDecl] = []
+        typedefs: list[FileDecl] = []
 
         for line in lines:
             if m := INCLUDE_RE.match(line.text):
                 includes.append(FileDecl(name=m.group("target").strip(), detail=line.text.strip()))
+            elif m := TYPEDEF_RE.match(line.text):
+                typedefs.append(FileDecl(name=m.group("name").strip(), detail=line.text.strip()))
             elif m := EXTERN_RE.match(line.text):
-                externals.append(FileDecl(name=m.group("name").strip(), detail=line.text.strip()))
+                # EXTERN/EXTERNDEF can have comma-separated entries; EXTERN_RE only captures the first name
+                raw = line.text.strip()
+                names_m = EXTERN_NAMES_RE.match(raw)
+                if names_m:
+                    for entry in (e.strip() for e in names_m.group("names").split(",")):
+                        name = entry.split(":")[0].strip()
+                        if name:
+                            externals.append(FileDecl(name=name, detail=raw))
+                else:
+                    externals.append(FileDecl(name=m.group("name").strip(), detail=raw))
             elif m := PUBLIC_RE.match(line.text):
                 for name in (n.strip() for n in m.group("names").split(",")):
                     if name:
@@ -210,6 +224,7 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
             segments=_dedup_decls(segments),
             constants=_dedup_decls(constants),
             variables=_dedup_decls(variables),
+            typedefs=_dedup_decls(typedefs),
         )
 
 

@@ -67,7 +67,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
                 f'<div class="file-header-block">{escape(diagram.file_header)}</div>'
             )
             sections = header_block + sections
-        # File overview section: includes, externals, publics, segments, constants| variables
+        # File overview section: includes, externals, publics, segments, typedefs, constants, variables
         sections = self._render_file_overview(diagram) + sections
 
         return f"""<!DOCTYPE html>
@@ -490,6 +490,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       .overview-card-title.pub {{ color: var(--green); }}
       .overview-card-title.seg {{ color: var(--amber); }}
       .overview-card-title.const {{ color: var(--purple); }}
+      .overview-card-title.typedef {{ color: var(--blue); }}
       .overview-card-title.var {{ color: var(--teal); }}
       .overview-card-list {{
         display: flex;
@@ -919,6 +920,7 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         cards.append(_card("Externals", diagram.externals, "ext"))
         cards.append(_card("Publics", diagram.publics, "pub"))
         cards.append(_card("Segments", diagram.segments, "seg"))
+        cards.append(_card("Type Aliases", diagram.typedefs, "typedef"))
         cards.append(_card("Constants", diagram.constants, "const"))
         cards.append(_card("Variables", diagram.variables, "var"))
         filtered = [c for c in cards if c]
