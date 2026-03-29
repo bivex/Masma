@@ -24,6 +24,7 @@ from masma.domain.control_flow import (
     ActionFlowStep,
     AlignFlowStep,
     CallFlowStep,
+    CommentFlowStep,
     DataDeclFlowStep,
     ForInFlowStep,
     GuardFlowStep,
@@ -61,11 +62,11 @@ _B  = "\033[1m"  if _TTY else ""
 _RST = "\033[0m" if _TTY else ""
 
 KNOWN_STEP_TYPES = (
-    ActionFlowStep, AlignFlowStep, CallFlowStep, DataDeclFlowStep,
-    ForInFlowStep, GuardFlowStep, IfFlowStep, IfdefFlowStep,
-    InvokeFlowStep, JumpFlowStep, LabelFlowStep, LocalDeclFlowStep,
-    MacroCallFlowStep, RepeatStringFlowStep, RepeatWhileFlowStep,
-    StackFlowStep, SwitchFlowStep, WhileFlowStep,
+    ActionFlowStep, AlignFlowStep, CallFlowStep, CommentFlowStep,
+    DataDeclFlowStep, ForInFlowStep, GuardFlowStep, IfFlowStep,
+    IfdefFlowStep, InvokeFlowStep, JumpFlowStep, LabelFlowStep,
+    LocalDeclFlowStep, MacroCallFlowStep, RepeatStringFlowStep,
+    RepeatWhileFlowStep, StackFlowStep, SwitchFlowStep, WhileFlowStep,
 )
 
 
@@ -108,6 +109,8 @@ def _fmt_step(step, indent: int = 0) -> list[str]:
         lines.append(f"{pad}{_DIM}{name}{_RST}  {step.name} {step.type_info!r}")
     elif isinstance(step, StackFlowStep):
         lines.append(f"{pad}{_DIM}{name}{_RST}  {step.direction} {step.operand}  depth={step.stack_depth}")
+    elif isinstance(step, CommentFlowStep):
+        lines.append(f"{pad}{_DIM}{name}{_RST}  {step.text!r}")
     else:
         lines.append(f"{pad}{_DIM}{name}{_RST}  {step!r}")
     return lines

@@ -19,7 +19,7 @@ ENDP_RE = re.compile(rf"^(?P<name>{_NAME})\s+endp\b$", re.IGNORECASE)
 # cmacros.inc-style procedure markers used in older MASM / NT sources
 CPROC_RE = re.compile(rf"^cProc\s+(?P<name>{_NAME})\b(?P<tail>.*)$", re.IGNORECASE)
 CEND_RE = re.compile(r"^cEnd\b", re.IGNORECASE)
-STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struc?t?\b$", re.IGNORECASE)
+STRUCT_RE = re.compile(rf"^(?P<name>{_NAME})\s+struc?t?\b(?P<tail>.*)$", re.IGNORECASE)
 ENDS_RE = re.compile(rf"^(?P<name>{_NAME})\s+ends\b$", re.IGNORECASE)
 UNION_RE = re.compile(rf"^(?P<name>{_NAME})\s+union\b", re.IGNORECASE)
 MACRO_RE = re.compile(rf"^(?P<name>{_NAME})\s+macro\b(?P<tail>.*)$", re.IGNORECASE)
