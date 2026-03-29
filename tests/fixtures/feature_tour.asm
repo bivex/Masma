@@ -4,6 +4,21 @@
 ; MacroCallFlowStep, RepeatStringFlowStep, IfdefFlowStep, LabelFlowStep,
 ; LocalDeclFlowStep.
 
+; ─── External symbol declarations ────────────────────────────────────────────
+EXTERN  GetProcessHeap:PROC, HeapAlloc:PROC, HeapFree:PROC
+EXTERN  ExitProcess:PROC, MessageBoxA:PROC
+EXTERNDEF  _errno:DWORD, _environ:DWORD
+
+; ─── Public symbol exports ────────────────────────────────────────────────────
+PUBLIC  demo_action, demo_if, demo_while
+PUBLIC  demo_composite, demo_call
+
+; ─── Type aliases (TYPEDEF) ───────────────────────────────────────────────────
+LPVOID  TYPEDEF PTR
+HANDLE  TYPEDEF DWORD
+BOOL    TYPEDEF DWORD
+SIZE_T  TYPEDEF DWORD
+
 ; ─── Struct definitions ───────────────────────────────────────────────────────
 POINT STRUCT
     x   DWORD ?
@@ -16,6 +31,19 @@ RECT STRUCT
     right   DWORD ?
     bottom  DWORD ?
 RECT ENDS
+
+; ─── Union definitions ────────────────────────────────────────────────────────
+REG32 UNION
+    dw_val  DWORD ?
+    lo_word WORD  ?
+    lo_byte BYTE  ?
+REG32 ENDS
+
+VARIANT_VAL UNION
+    int_val   DWORD ?
+    float_val REAL4 ?
+    ptr_val   DWORD ?
+VARIANT_VAL ENDS
 
 ; ─── User-defined macros ──────────────────────────────────────────────────────
 ZERO_REG MACRO reg
