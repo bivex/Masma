@@ -253,39 +253,34 @@ teardown_phase:
 demo_label ENDP
 
 ; ─── 16. JumpFlowStep (unstructured goto / conditional branch) ────────────────
-; Jumps that don't form a recognized if/while/switch block.
+; Standalone jumps without a preceding cmp — not absorbed into if/while/switch.
 demo_jumps PROC
-    mov  eax, 0
-    ; signed comparison jumps
-    cmp  eax, 0
-    jz   skip_block          ; equal/zero
-    jnz  skip_block          ; not zero
-    jg   skip_block          ; greater
-    jge  skip_block          ; greater or equal
-    jl   skip_block          ; less
-    jle  skip_block          ; less or equal
-    ; unsigned comparison jumps
-    ja   skip_block          ; above
-    jae  skip_block          ; above or equal
-    jb   skip_block          ; below
-    jbe  skip_block          ; below or equal
-    ; flag jumps
-    jo   skip_block          ; overflow
-    jno  skip_block          ; no overflow
-    js   skip_block          ; sign (negative)
-    jns  skip_block          ; no sign (positive)
-    jp   skip_block          ; parity even
-    jnp  skip_block          ; parity odd
-    ; count-register jumps (no FLAGS)
-    jcxz  skip_block         ; CX == 0
-    jecxz skip_block         ; ECX == 0
-skip_block:
-    ; unconditional jumps
-    jmp  skip_block          ; symbolic label — red
-    jmp  eax                 ; register indirect — red
-    jmp  [ebx]               ; memory indirect — red
-    jmpf far_target          ; far jump — red
-end_proc:
+    ; conditional jumps — FLAGS already set by caller (no cmp here)
+    jz   lbl_a               ; equal / zero         → amber
+    jnz  lbl_a               ; not equal / not zero → amber
+    jg   lbl_a               ; signed greater       → amber
+    jge  lbl_a               ; signed ≥             → amber
+    jl   lbl_a               ; signed less          → amber
+    jle  lbl_a               ; signed ≤             → amber
+    ja   lbl_a               ; unsigned above       → amber
+    jae  lbl_a               ; unsigned ≥           → amber
+    jb   lbl_a               ; unsigned below       → amber
+    jbe  lbl_a               ; unsigned ≤           → amber
+    jo   lbl_a               ; overflow             → amber
+    jno  lbl_a               ; no overflow          → amber
+    js   lbl_a               ; sign (negative)      → amber
+    jns  lbl_a               ; no sign (positive)   → amber
+    jp   lbl_a               ; parity even          → amber
+    jnp  lbl_a               ; parity odd           → amber
+    jcxz  lbl_a              ; CX == 0              → amber
+    jecxz lbl_a              ; ECX == 0             → amber
+lbl_a:
+    ; unconditional jumps — always red
+    jmp  lbl_a               ; symbolic label
+    jmp  eax                 ; register indirect
+    jmp  [ebx]               ; memory indirect
+    jmpf far_label           ; far jump
+lbl_b:
     ret
 demo_jumps ENDP
 

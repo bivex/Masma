@@ -399,11 +399,11 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
       /* ── Jumps (unstructured goto / conditional branch) ── */
       .ns-jump {{ display: flex; align-items: stretch; }}
       .ns-jump > .ns-label {{ display: flex; align-items: center; gap: 6px; }}
-      .ns-jump-unconditional {{ border-left: 3px solid var(--red, #f47067); background: rgba(244, 112, 103, 0.07); }}
-      .ns-jump-conditional   {{ border-left: 3px solid var(--yellow, #e5c07b); background: rgba(229, 192, 123, 0.07); }}
+      .ns-jump-unconditional {{ border-left: 3px solid var(--red); background: rgba(255, 147, 169, 0.07); }}
+      .ns-jump-conditional   {{ border-left: 3px solid var(--amber); background: rgba(241, 202, 122, 0.07); }}
       .jump-icon {{ font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }}
-      .ns-jump-unconditional .jump-icon {{ color: var(--red, #f47067); }}
-      .ns-jump-conditional   .jump-icon {{ color: var(--yellow, #e5c07b); }}
+      .ns-jump-unconditional .jump-icon {{ color: var(--red); }}
+      .ns-jump-conditional   .jump-icon {{ color: var(--amber); }}
       .jump-text {{ font-family: var(--mono); font-size: 12px; color: var(--text); }}
       .ns-macro  {{ background: var(--surface-2); border-left: 3px solid var(--purple); }}
       .ns-macro  > .ns-label {{ background: rgba(196, 167, 255, 0.08); }}
