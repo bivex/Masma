@@ -60,6 +60,7 @@ from masma.infrastructure.masm.support import (
     extract_entry_point,
     extract_file_header,
     iter_source_lines,
+    scan_label_as_proc_blocks,
     scan_macro_blocks,
     scan_procedure_blocks,
     scan_struct_blocks,
@@ -158,6 +159,8 @@ class MasmControlFlowExtractor(ControlFlowExtractor):
     def extract(self, source_unit: SourceUnit) -> ControlFlowDiagram:
         lines = iter_source_lines(source_unit.content)
         procedures = scan_procedure_blocks(lines)
+        if not procedures:
+            procedures = scan_label_as_proc_blocks(lines)
         macro_blocks = scan_macro_blocks(lines)
         macro_names = _scan_macro_names(lines)
 

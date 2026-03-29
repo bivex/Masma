@@ -532,6 +532,59 @@ def scan_macro_blocks(lines: tuple[SourceLine, ...]) -> tuple[MacroBlock, ...]:
     return tuple(macros)
 
 
+_BARE_LABEL_RE = re.compile(rf"^(?P<name>{_NAME}):$")
+_JMP_ANY_TEXT_RE = re.compile(
+    r"^(?:jmp(?:f|s)?|j(?:e|z|ne|nz|g|ge|l|le|a|ae|b|be|c|nc|o|no|s|ns|p|pe|np|po"
+    r"|na(?:e)?|nb(?:e)?|ng(?:e)?|nl(?:e)?|cxz|ecxz|rcxz))\s+(?P<label>[A-Za-z_.$?@][\w.$?@]*)$",
+    re.IGNORECASE,
+)
+
+
+def scan_label_as_proc_blocks(lines: tuple[SourceLine, ...]) -> tuple[ProcedureBlock, ...]:
+    """Fallback: treat bare top-level labels as procedure entries.
+
+    Used when no PROC/ENDP blocks are found (e.g. flat/NASM-style MASM files).
+    A label is considered a procedure entry if it is NOT the target of any
+    jmp/jcc within the file — meaning it is called externally or via `call`.
+    Procedure body runs until the next procedure-entry label or end of file.
+    """
+    # Pass 1: collect all bare labels and all jmp/jcc targets
+    all_labels: list[tuple[int, str]] = []   # (line_index, name)
+    jump_targets: set[str] = set()
+
+    for i, line in enumerate(lines):
+        m = _BARE_LABEL_RE.match(line.text)
+        if m:
+            all_labels.append((i, m.group("name")))
+        j = _JMP_ANY_TEXT_RE.match(line.text)
+        if j:
+            jump_targets.add(j.group("label").lower())
+
+    # Pass 2: procedure entries = labels NOT targeted by any jmp/jcc
+    proc_entries = [(i, name) for i, name in all_labels if name.lower() not in jump_targets]
+    if not proc_entries:
+        return ()
+
+    # Pass 3: slice file between procedure entry labels
+    lines_list = list(lines)
+    procedures: list[ProcedureBlock] = []
+    for k, (start_idx, name) in enumerate(proc_entries):
+        next_start = proc_entries[k + 1][0] if k + 1 < len(proc_entries) else len(lines_list)
+        body_lines = [
+            l for l in lines_list[start_idx + 1 : next_start]
+            if l.text
+        ]
+        procedures.append(ProcedureBlock(
+            name=name,
+            signature=f"{name}:",
+            line=lines_list[start_idx].number,
+            body_lines=tuple(body_lines),
+            segment=None,
+        ))
+
+    return tuple(procedures)
+
+
 def is_data_directive(line: SourceLine) -> bool:
     return line.text.lower() in DATA_DIRECTIVES
 
