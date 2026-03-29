@@ -362,4 +362,26 @@ demo_page PROC
 demo_page ENDP
 PAGE_SEG ENDS
 
+; ─── 20. CommentFlowStep (full-line comments inside procedures) ──────────────
+; Comments are captured and shown as muted blocks; toggle on/off in toolbar.
+demo_comments PROC
+    ; Initialize the counter to zero
+    xor  eax, eax
+    ; Load the base address of the buffer
+    mov  esi, offset src_buf
+    ; Copy loop — process all 16 elements
+    mov  ecx, 16
+copy_loop:
+    ; Read next DWORD from source
+    lodsd
+    ; Double the value
+    shl  eax, 1
+    ; Store to destination
+    stosd
+    ; Continue if elements remain
+    loop copy_loop
+    ; Done — return to caller
+    ret
+demo_comments ENDP
+
 END demo_init
