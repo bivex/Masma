@@ -245,6 +245,29 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         transform: translateX(12px);
         background: var(--blue);
       }}
+      .toolbar-back {{
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px 3px 7px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color .12s, background .12s, border-color .12s;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }}
+      .toolbar-back:hover {{
+        color: var(--text-bright);
+        background: var(--surface-4);
+        border-color: var(--border-strong);
+      }}
+      .toolbar-back svg {{ flex-shrink: 0; }}
       .toggle-label {{
         font-size: 10px;
         font-weight: 600;
@@ -992,6 +1015,10 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         <span class="titlebar-text">Masma · NSD Viewer</span>
       </div>
       <div class="toolbar">
+        <a class="toolbar-back" href="javascript:history.back()" title="Back to index">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </a>
         <span class="toolbar-label">Nassi-Shneiderman</span>
         <code class="toolbar-path">{escape(diagram.source_location)}</code>
         <label class="toolbar-toggle" title="Toggle comments">
