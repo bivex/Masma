@@ -637,6 +637,29 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
         word-break: break-word;
       }}
       body.hide-comments .ns-comment {{ display: none; }}
+      /* ── Pragma / option directives ── */
+      .ns-pragma {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 12px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.02em;
+        background: rgba(142, 155, 187, 0.03);
+        border-top: 1px dotted rgba(142, 155, 187, 0.15);
+        border-bottom: 1px dotted rgba(142, 155, 187, 0.15);
+      }}
+      .ns-pragma .pragma-icon {{
+        font-size: 10px;
+        opacity: 0.4;
+        flex-shrink: 0;
+      }}
+      .ns-pragma .pragma-text {{
+        font-size: 10px;
+        opacity: 0.55;
+      }}
       .file-header-block {{
         margin: 0 0 12px 0;
         padding: 10px 16px;
@@ -1133,6 +1156,14 @@ class HtmlNassiDiagramRenderer(NassiDiagramRenderer):
             )
         if isinstance(step, ActionFlowStep):
             lowered = step.label.lower()
+            # option/pragma-style directives — render as a thin pragma marker
+            if lowered.startswith("option "):
+                return (
+                    '<div class="ns-pragma" aria-label="Pragma directive">'
+                    f'<span class="pragma-icon">⚙</span>'
+                    f'<code class="pragma-text">{escape(step.label)}</code>'
+                    "</div>"
+                )
             is_ret = lowered in ("ret", "retn", "retf") or lowered.startswith("ret ") or lowered.startswith("retn ") or lowered.startswith("retf ")
             css = "ns-node ns-action ns-ret" if is_ret else "ns-node ns-action"
             return (
